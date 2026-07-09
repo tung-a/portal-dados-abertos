@@ -12,7 +12,11 @@ export default function DatasetDetailModal({ dataset, onClose }) {
             <h2 className="modal-title">{dataset.title}</h2>
             <p className="modal-source">Fonte: {dataset.source}</p>
           </div>
-          <button onClick={onClose} className="modal-close" aria-label="Fechar modal">
+          <button
+            onClick={onClose}
+            className="modal-close"
+            aria-label="Fechar modal"
+          >
             ✕
           </button>
         </div>
@@ -29,20 +33,30 @@ export default function DatasetDetailModal({ dataset, onClose }) {
               <div className="metadata-grid">
                 <div className="metadata-item">
                   <span className="metadata-label">Registros</span>
-                  <span className="metadata-value">{dataset.metadata.rows}</span>
+                  <span className="metadata-value">
+                    {dataset.metadata.rows}
+                  </span>
                 </div>
                 <div className="metadata-item">
                   <span className="metadata-label">Colunas/Atributos</span>
-                  <span className="metadata-value">{dataset.metadata.columns}</span>
+                  <span className="metadata-value">
+                    {dataset.metadata.columns}
+                  </span>
                 </div>
                 <div className="metadata-item">
                   <span className="metadata-label">Codificação</span>
-                  <span className="metadata-value">{dataset.metadata.encoding}</span>
+                  <span className="metadata-value">
+                    {dataset.metadata.encoding}
+                  </span>
                 </div>
                 {dataset.metadata.crs && (
                   <div className="metadata-item">
-                    <span className="metadata-label">Sistema de Referência (CRS)</span>
-                    <span className="metadata-value">{dataset.metadata.crs}</span>
+                    <span className="metadata-label">
+                      Sistema de Referência (CRS)
+                    </span>
+                    <span className="metadata-value">
+                      {dataset.metadata.crs}
+                    </span>
                   </div>
                 )}
               </div>
@@ -89,12 +103,16 @@ export default function DatasetDetailModal({ dataset, onClose }) {
             </div>
           </div>
 
-          <button
-            onClick={() => alert(`Iniciando download do dataset: ${dataset.title}`)}
-            className="modal-download"
-          >
-            ⬇ Baixar Conjunto de Dados
-          </button>
+          <div className="modal-actions">
+            <a
+              href={dataset.downloadUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="modal-download-link"
+            >
+              <span>⬇ Baixar Conjunto de Dados</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

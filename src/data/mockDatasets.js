@@ -8,6 +8,8 @@ export const datasets = [
     source: "IBGE / Censo 2022",
     description:
       "Dados espaciais e estatísticos sobre a concentração de habitantes por setor censitário no município de São Vicente.",
+    downloadUrl:
+      "https://zenodo.org/records/21281931/files/amostra_inundacao_saovicente_2026.csv?download=1",
     metadata: {
       rows: "450 setores",
       columns: 8,
@@ -47,6 +49,8 @@ export const datasets = [
     source: "Defesa Civil / Prefeitura de São Vicente",
     description:
       "Mapeamento poligonal das zonas com alta, média e baixa suscetibilidade a alagamentos e inundações costeiras e fluviais.",
+    downloadUrl:
+      "https://zenodo.org/records/21281931/files/amostra_inundacao_saovicente_2026.csv?download=1",
     metadata: {
       rows: "32 zonas",
       columns: 5,
@@ -77,6 +81,8 @@ export const datasets = [
     source: "DATASUS / Prefeitura",
     description:
       "Geolocalização (latitude e longitude) de UBSs, UPAs e hospitais municipais para análise de cobertura de atendimento.",
+    downloadUrl:
+      "https://zenodo.org/records/21281931/files/amostra_inundacao_saovicente_2026.csv?download=1",
     metadata: {
       rows: "28 unidades",
       columns: 6,
@@ -110,6 +116,8 @@ export const datasets = [
     source: "IBGE",
     description:
       "Distribuição de renda domiciliar per capita para cruzamento com indicadores de vulnerabilidade e justiça climática.",
+    downloadUrl:
+      "https://zenodo.org/records/21281931/files/amostra_inundacao_saovicente_2026.csv?download=1",
     metadata: {
       rows: "450 setores",
       columns: 4,
@@ -133,6 +141,8 @@ export const datasets = [
     source: "CETESB / Pesquisa FAPESP",
     description:
       "Cadastramento de áreas com contaminação do solo ou lençol freático identificadas no município.",
+    downloadUrl:
+      "https://zenodo.org/records/21281931/files/amostra_inundacao_saovicente_2026.csv?download=1",
     metadata: {
       rows: "14 locais",
       columns: 7,
