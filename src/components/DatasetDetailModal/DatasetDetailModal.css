@@ -1,236 +1,476 @@
+/* ==========================================================================
+   SOBREPOSIÇÃO DE TELA (Posicionamento Forçado e Centralizado)
+   ========================================================================== */
 .modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: rgba(17, 24, 39, 0.55);
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem;
+  margin: 0 !important;
+  animation: fadeIn 0.2s ease-out;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   CAIXA DO MODAL
+   ========================================================================== */
 .modal-dialog {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  max-width: 54rem;
+  width: 100%;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
-  width: min(100%, 64rem);
-  max-height: min(90vh, 56rem);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   overflow: hidden;
-  border-radius: 1rem;
-  background: #fff;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+  position: relative;
+  animation: scaleUp 0.2s ease-out;
 }
 
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   CABEÇALHO & CATEGORIAS
+   ========================================================================== */
 .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #ffffff;
   position: sticky;
   top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  z-index: 10;
 }
 
-.modal-category {
+.modal-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.modal-category-tag {
   display: inline-block;
-  margin-bottom: 0.3rem;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
   color: #059669;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.15rem 0.6rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .modal-title {
-  margin: 0;
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #111827;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.3;
 }
 
-.modal-source {
-  margin: 0.25rem 0 0;
-  font-size: 0.92rem;
-  color: #6b7280;
+.modal-source-text {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 0.2rem;
 }
 
 .modal-close {
-  border: 0;
-  padding: 0.2rem 0.4rem;
   background: transparent;
-  color: #9ca3af;
+  border: none;
   font-size: 1.5rem;
+  font-weight: 700;
+  color: #94a3b8;
   cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+  line-height: 1;
 }
 
 .modal-close:hover {
-  color: #4b5563;
+  color: #334155;
+  background-color: #f1f5f9;
 }
 
-.modal-content {
-  flex: 1;
-  overflow-y: auto;
+/* ==========================================================================
+   CORPO DO MODAL & ELEMENTOS GERAIS
+   ========================================================================== */
+.modal-body {
   padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
 }
 
 .modal-section {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.modal-section h3 {
-  margin: 0 0 0.6rem;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+.section-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #334155;
   text-transform: uppercase;
-  color: #4b5563;
-}
-
-.modal-section p {
+  letter-spacing: 0.05em;
   margin: 0;
-  color: #4b5563;
-  line-height: 1.7;
 }
 
-.metadata-card {
+.section-description {
+  font-size: 0.875rem;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ==========================================================================
+   LISTA DE ARQUIVOS (DOWNLOAD INDIVIDUAL)
+   ========================================================================== */
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.section-subtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.files-list-container {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.6rem;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.file-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.15s ease;
+  gap: 1rem;
+}
+
+.file-item-row:last-child {
+  border-bottom: none;
+}
+
+.file-item-row:hover {
+  background-color: #f8fafc;
+}
+
+.file-info-col {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.file-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.file-name {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+.file-meta {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.btn-file-download {
+  background-color: #f1f5f9;
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.4rem;
+  text-decoration: none !important;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-file-download:hover {
+  background-color: #059669;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   CAIXA DE METADADOS
+   ========================================================================== */
+.metadata-box {
+  background-color: #f8fafc;
   padding: 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.8rem;
-  background: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.metadata-box-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.75rem 0;
 }
 
 .metadata-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .metadata-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .metadata-item {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
 }
 
 .metadata-label {
-  font-size: 0.73rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #9ca3af;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: block;
 }
 
 .metadata-value {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
 }
 
-.preview-table-wrap {
+.metadata-value.text-emerald {
+  color: #059669;
+}
+
+.metadata-value.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.metadata-value.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* ==========================================================================
+   TABELA DE PREVIEW (AMOSTRA)
+   ========================================================================== */
+.table-container {
   overflow-x: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
 }
 
 .preview-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.83rem;
-}
-
-.preview-table th,
-.preview-table td {
-  padding: 0.7rem 0.8rem;
-  border-bottom: 1px solid #f3f4f6;
   text-align: left;
+  border-collapse: collapse;
+  font-size: 0.875rem;
 }
 
-.preview-table thead th {
-  background: #f3f4f6;
-  color: #4b5563;
-  font-weight: 700;
+.preview-table-header {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.preview-th {
+  padding: 0.75rem;
   text-transform: capitalize;
-}
-
-.preview-table tbody tr:hover {
-  background: #f9fafb;
-}
-
-.preview-caption {
-  display: block;
-  margin-top: 0.4rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.75rem;
-  color: #9ca3af;
 }
 
+.preview-tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.15s ease;
+}
+
+.preview-tr:hover {
+  background-color: #f8fafc;
+}
+
+.preview-td {
+  padding: 0.75rem;
+  color: #475569;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.preview-disclaimer {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   RODAPÉ DO MODAL & BOTÃO DE DOWNLOAD EM LOTE
+   ========================================================================== */
 .modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8fafc;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  align-items: stretch;
 }
 
-.modal-actions {
+@media (min-width: 640px) {
+  .modal-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.footer-formats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.formats-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.formats-list {
+  display: inline-flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.format-tag {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 0.15rem 0.55rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.footer-actions {
+  display: flex;
   width: 100%;
 }
 
-.modal-download-link {
-  display: flex;
+@media (min-width: 640px) {
+  .footer-actions {
+    width: auto;
+  }
+}
+
+.btn-download-all {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  background-color: #059669;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.65rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+  text-decoration: none !important;
   width: 100%;
-  padding: 0.75rem 1.25rem;
-  border-radius: 0.8rem;
-  background: #059669;
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-decoration: none;
-  box-shadow: 0 8px 18px rgba(5, 150, 105, 0.2);
-  transition: background-color 0.2s ease;
 }
 
-.modal-download-link:hover {
-  background: #047857;
+.btn-download-all:hover {
+  background-color: #047857;
 }
 
-.modal-formats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+.btn-download-all:active {
+  transform: scale(0.98);
 }
 
-.modal-format {
-  padding: 0.25rem 0.55rem;
-  border: 1px solid #d1d5db;
-  border-radius: 999px;
-  background: #fff;
-  color: #374151;
-  font-size: 0.78rem;
-  font-weight: 700;
+/* ==========================================================================
+   CUSTOMIZAÇÃO DA BARRA DE ROLAGEM
+   ========================================================================== */
+.modal-dialog ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
-
-@media (min-width: 768px) {
-  .modal-footer {
-    flex-direction: row;
-  }
-
-  .modal-actions {
-    width: auto;
-  }
-
-  .modal-download-link {
-    width: auto;
-  }
-
-  .metadata-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+.modal-dialog ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.modal-dialog ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.modal-dialog ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

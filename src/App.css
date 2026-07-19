@@ -1,100 +1,209 @@
-.app-shell {
+/* ==========================================================================
+   ESTILOS GERAIS & LAYOUT PRINCIPAL (App.css)
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+/* Estrutura de página em tela cheia com rodapé no fundo */
+.min-h-screen {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
-  color: #1f2937;
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
 }
 
-.app-main {
-  display: flex;
+/* Container central de conteúdo */
+main {
+  max-width: 72rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
   flex: 1;
+  display: flex;
   flex-direction: column;
   gap: 2rem;
-  width: min(100%, 76rem);
-  margin: 0 auto;
-  padding: 2rem 1.25rem 3rem;
 }
 
-.catalog-section {
-  flex: 1;
+/* Layout em duas colunas para computadores (Sidebar na esquerda, Catálogo na direita) */
+@media (min-width: 768px) {
+  main {
+    flex-direction: row;
+    align-items: flex-start;
+  }
 }
+
+section.flex-1 {
+  flex: 1;
+  width: 100%;
+}
+
+/* ==========================================================================
+   CABEÇALHO DA SEÇÃO DE CATÁLOGO & BOTÕES DE AÇÃO
+   ========================================================================== */
 
 .catalog-header {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+  align-items: flex-start;
   gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.catalog-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #111827;
-}
-
-.catalog-header span {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #6b7280;
-}
-
-.catalog-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.catalog-empty {
-  padding: 2.5rem 2rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
-  background: #fff;
-  text-align: center;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
-}
-
-.catalog-empty p {
-  margin: 0 0 0.75rem;
-  color: #6b7280;
-  font-weight: 600;
-}
-
-.catalog-empty button {
-  border: 0;
-  background: transparent;
-  color: #059669;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.app-footer {
-  margin-top: 2rem;
-  padding: 1.5rem 1rem;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
-  text-align: center;
-  font-size: 0.78rem;
-  color: #9ca3af;
-}
-
-@media (min-width: 768px) {
-  .app-main {
+@media (min-width: 640px) {
+  .catalog-header {
     flex-direction: row;
-    align-items: flex-start;
-    padding: 2rem 1.5rem 3rem;
+    align-items: center;
   }
+}
 
-  .catalog-section {
-    flex: 1;
+.catalog-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.catalog-title-wrapper h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.catalog-subtitle {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 0.2rem;
+}
+
+/* Badge animado de sincronização com a API do Zenodo */
+.sync-badge {
+  font-size: 0.75rem;
+  background-color: #d1fae5;
+  color: #065f46;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
   }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Botão principal de Publicar Dataset */
+.btn-publish {
+  width: 100%;
+  background-color: #059669;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.65rem 1.25rem;
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+  text-decoration: none;
+}
+
+.btn-publish:hover {
+  background-color: #047857;
+}
+
+.btn-publish:active {
+  transform: scale(0.98);
+}
+
+@media (min-width: 640px) {
+  .btn-publish {
+    width: auto;
+  }
+}
+
+/* ==========================================================================
+   GRID DE CONJUNTOS DE DADOS & ESTADO VAZIO
+   ========================================================================== */
+
+.datasets-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+/* Caixa exibida quando nenhum filtro encontra resultados */
+.empty-state {
+  background-color: #ffffff;
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.empty-state p {
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.btn-clear-filters {
+  background: none;
+  border: none;
+  color: #059669;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.btn-clear-filters:hover {
+  color: #047857;
+}
+
+/* ==========================================================================
+   RODAPÉ DO PORTAL
+   ========================================================================== */
+
+footer {
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 3rem;
 }
