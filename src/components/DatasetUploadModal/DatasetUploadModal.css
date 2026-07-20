@@ -1,226 +1,431 @@
+/* ==========================================================================
+   SOBREPOSIÇÃO DO MODAL (Fundo escuro e centralização forçada)
+   ========================================================================== */
 .upload-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: rgba(17, 24, 39, 0.6);
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(0, 0, 0, 0.65) !important;
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem;
+  margin: 0 !important;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.upload-modal {
-  width: min(100%, 42rem);
-  padding: 1.5rem;
-  border-radius: 1rem;
-  background: #fff;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   CAIXA DE DIÁLOGO
+   ========================================================================== */
+.upload-modal-dialog {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  max-width: 48rem; /* 768px */
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
   position: relative;
+  animation: scaleUp 0.2s ease-out;
 }
 
-.upload-modal__header {
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   CABEÇALHO DO MODAL
+   ========================================================================== */
+.upload-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding-bottom: 1rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
 }
 
-.upload-modal__title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #111827;
-}
-
-.upload-modal__subtitle {
-  margin: 0.2rem 0 0;
-  font-size: 0.78rem;
+.upload-subtitle {
+  font-size: 0.75rem;
   font-weight: 700;
   color: #059669;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
 }
 
-.upload-modal__close {
-  border: 0;
+.upload-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0.2rem 0 0 0;
+  line-height: 1.2;
+}
+
+.upload-close-btn {
   background: transparent;
-  color: #9ca3af;
-  font-size: 1.25rem;
+  border: none;
+  font-size: 1.5rem;
   font-weight: 700;
+  color: #94a3b8;
   cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+  line-height: 1;
 }
 
-.upload-modal__close:hover {
-  color: #4b5563;
+.upload-close-btn:hover {
+  color: #334155;
+  background-color: #e2e8f0;
 }
 
-.upload-modal__success {
-  margin: 2rem 0;
+/* ==========================================================================
+   CORPO DO FORMULÁRIO & CAMPOS GERAIS
+   ========================================================================== */
+.upload-form-body {
   padding: 1.5rem;
-  border: 1px solid #a7f3d0;
-  border-radius: 0.9rem;
-  background: #ecfdf5;
-  color: #065f46;
-  text-align: center;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex: 1;
 }
 
-.upload-modal__success h3 {
-  margin: 0 0 0.4rem;
-  font-size: 1.05rem;
-  color: #065f46;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.upload-modal__success p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #047857;
-}
-
-.upload-modal__form {
-  display: grid;
-  gap: 1rem;
-  font-size: 0.95rem;
-}
-
-.upload-field {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.upload-field label {
-  font-size: 0.9rem;
+.form-label {
+  font-size: 0.85rem;
   font-weight: 700;
-  color: #374151;
+  color: #334155;
 }
 
-.upload-field input,
-.upload-field select,
-.upload-field textarea {
+.form-input,
+.form-textarea {
   width: 100%;
-  border: 1px solid #d1d5db;
-  border-radius: 0.75rem;
-  padding: 0.7rem 0.8rem;
-  color: #111827;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background-color: #ffffff;
+  font-family: inherit;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
   outline: none;
-  background: #fff;
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
 }
 
-.upload-field input:focus,
-.upload-field select:focus,
-.upload-field textarea:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+/* ==========================================================================
+   GERENCIADOR DE PALAVRAS-CHAVE (INPUT + SUGESTÕES + TAGS)
+   ========================================================================== */
+.keyword-input-row {
+  display: flex;
+  gap: 0.5rem;
 }
 
-.upload-field textarea {
-  min-height: 5.5rem;
-  resize: vertical;
-}
-
-.upload-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.upload-dropzone {
-  padding: 1.25rem;
-  border: 2px dashed #d1d5db;
-  border-radius: 0.9rem;
-  text-align: center;
+.btn-add-keyword {
+  background-color: #0f172a;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
   transition: background-color 0.2s ease;
 }
 
-.upload-dropzone:hover {
-  background: #f9fafb;
+.btn-add-keyword:hover {
+  background-color: #334155;
 }
 
-.upload-dropzone input {
-  display: none;
-}
-
-.upload-dropzone label {
+/* Sugestões Rápidas */
+.suggestions-wrapper {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.suggestions-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.btn-suggestion-pill {
+  background-color: #f1f5f9;
+  border: 1px dashed #94a3b8;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.upload-dropzone__icon {
-  font-size: 1.8rem;
-}
-
-.upload-dropzone__primary {
-  font-weight: 700;
+.btn-suggestion-pill:hover {
+  background-color: #ecfdf5;
+  border-color: #059669;
   color: #059669;
 }
 
-.upload-dropzone__secondary {
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
-.upload-progress {
-  width: 100%;
-  height: 0.7rem;
-  margin-top: 0.25rem;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #e5e7eb;
-}
-
-.upload-progress__bar {
-  height: 100%;
-  border-radius: 999px;
-  background: #059669;
-  transition: width 0.3s ease;
-}
-
-.upload-actions {
+/* Lista de Tags Adicionadas */
+.added-keywords-container {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  min-height: 3.5rem;
+  align-items: center;
 }
 
-.upload-actions button {
-  border: 0;
-  border-radius: 0.75rem;
-  padding: 0.7rem 1rem;
+.empty-keywords-text {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.keyword-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  font-size: 0.8rem;
   font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.375rem;
+}
+
+.btn-remove-keyword {
+  background: transparent;
+  border: none;
+  color: #059669;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.btn-remove-keyword:hover {
+  color: #047857;
+}
+
+/* ==========================================================================
+   CAIXA DE UPLOAD DE ARQUIVO
+   ========================================================================== */
+.file-upload-box {
+  position: relative;
+  border: 2px dashed #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  text-align: center;
+  background-color: #f8fafc;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.file-upload-box:hover {
+  border-color: #059669;
+  background-color: #ecfdf5;
+}
+
+.file-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   cursor: pointer;
 }
 
-.upload-actions__cancel {
-  background: #f3f4f6;
-  color: #4b5563;
+.file-instruction {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
 }
 
-.upload-actions__submit {
-  background: #059669;
-  color: #fff;
-  box-shadow: 0 8px 18px rgba(5, 150, 105, 0.2);
+/* ==========================================================================
+   RODAPÉ COM BOTÕES DE AÇÃO
+   ========================================================================== */
+.upload-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
 }
 
-.upload-actions__submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.btn-cancel {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
-.upload-actions__submit:hover:not(:disabled) {
-  background: #047857;
+.btn-cancel:hover {
+  background-color: #f1f5f9;
 }
 
-@media (min-width: 768px) {
-  .upload-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.btn-submit-upload {
+  background-color: #059669;
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.65rem 1.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+}
 
-  .upload-actions {
-    flex-direction: row;
-  }
+.btn-submit-upload:hover {
+  background-color: #047857;
+}
+
+.btn-submit-upload:active {
+  transform: scale(0.98);
+}
+/* ==========================================================================
+   LISTA DE PRÉ-VISUALIZAÇÃO DE MÚLTIPLOS ARQUIVOS
+   ========================================================================== */
+.files-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.85rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+}
+
+.files-preview-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.file-preview-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  gap: 0.5rem;
+}
+
+.file-preview-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.file-preview-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.file-preview-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.file-preview-size {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  flex-shrink: 0;
+}
+
+.btn-remove-file {
+  background: transparent;
+  border: none;
+  color: #ef4444; /* Vermelho discreto para remoção de arquivo */
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-remove-file:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
 }

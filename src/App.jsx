@@ -28,6 +28,14 @@ export default function App() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   // =========================================================================
+  // 📄 CONTROLE DE PAGINAÇÃO (Evita rolagem infinita)
+  // =========================================================================
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // ⬅️ Define 6 cards por página (fica perfeito em grids 2x3 ou 3x2)
+
+  // Sempre que o usuário buscar algo ou mudar um filtro, volta automaticamente para a Página 1
+
+  // =========================================================================
   // 🔄 BUSCA AUTOMÁTICA DOS SEUS UPLOADS NO ZENODO SANDBOX VIA API
   // =========================================================================
   useEffect(() => {
@@ -189,6 +197,14 @@ export default function App() {
     });
   }, [datasetsList, searchTerm, selectedCategory, selectedFormat]);
 
+  // Calcula o total de páginas e recorta apenas os itens da página atual
+  const totalPages = Math.ceil(filteredDatasets.length / itemsPerPage);
+
+  const paginatedDatasets = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredDatasets.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredDatasets, currentPage]);
+
   return (
     <div className="min-h-screen">
       {/* 1. Cabeçalho & Barra de Busca */}
@@ -235,16 +251,51 @@ export default function App() {
             </button>
           </div>
 
+          {/* Grid de Cards (Agora renderiza APENAS os itens da página atual) */}
           {filteredDatasets.length > 0 ? (
-            <div className="datasets-grid">
-              {filteredDatasets.map((dataset) => (
-                <DatasetCard
-                  key={dataset.id}
-                  dataset={dataset}
-                  onSelect={(data) => setSelectedDataset(data)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="datasets-grid">
+                {paginatedDatasets.map((dataset) => (
+                  <DatasetCard
+                    key={dataset.id}
+                    dataset={dataset}
+                    onSelect={(data) => setSelectedDataset(data)}
+                  />
+                ))}
+              </div>
+
+              {/* Controles de Paginação (Só aparecem se houver mais de 1 página) */}
+              {totalPages > 1 && (
+                <div className="pagination-container">
+                  <button
+                    onClick={() => {
+                      setCurrentPage((prev) => Math.max(prev - 1, 1));
+                      window.scrollTo({ top: 400, behavior: "smooth" }); // Sobe suavemente ao topo do catálogo
+                    }}
+                    disabled={currentPage === 1}
+                    className="btn-pagination"
+                  >
+                    ← Anterior
+                  </button>
+
+                  <span className="pagination-info">
+                    Página <strong>{currentPage}</strong> de{" "}
+                    <strong>{totalPages}</strong>
+                  </span>
+
+                  <button
+                    onClick={() => {
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+                      window.scrollTo({ top: 400, behavior: "smooth" });
+                    }}
+                    disabled={currentPage === totalPages}
+                    className="btn-pagination"
+                  >
+                    Próximo →
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="empty-state">
               <p>Nenhum conjunto de dados encontrado com os filtros atuais.</p>

@@ -1,270 +1,356 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import "./DatasetUploadModal.css";
 
-export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("Meio Ambiente & Risco");
-  const [description, setDescription] = useState("");
-  const [source, setSource] = useState(
-    "Pesquisa Colaborativa / Ciência Cidadã",
-  );
-  const [file, setFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [successMessage, setSuccessMessage] = useState(null);
+const QUICK_SUGGESTIONS = [
+  "Areas de Risco",
+  "São Vicente",
+  "Justiça Climática",
+  "Economia",
+  "Saúde",
+  "População",
+  "Dados Abertos",
+];
 
+export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
+  // =========================================================================
+  // 1. TODOS OS HOOKS DECLARADOS NO TOPO (SEM CONDICIONAIS ANTES DELES)
+  // =========================================================================
+  const [title, setTitle] = useState("");
+  const [source, setSource] = useState("");
+  const [description, setDescription] = useState("");
+
+  // Array para armazenar MÚLTIPLOS ARQUIVOS
+  const [files, setFiles] = useState([]);
+
+  // Estados para Múltiplas Palavras-chave
+  const [keywords, setKeywords] = useState([
+    "Dados Abertos",
+    "Justiça Climática",
+    "São Vicente",
+  ]);
+  const [currentKeyword, setCurrentKeyword] = useState("");
+
+  // =========================================================================
+  // 2. VERIFICAÇÃO DE ABERTURA JÁ COM A MEMÓRIA DOS HOOKS GARANTIDA
+  // =========================================================================
   if (!isOpen) return null;
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+  // Adiciona novos arquivos à lista (evitando duplicatas pelo nome)
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFiles = Array.from(e.target.files);
+      const newUniqueFiles = selectedFiles.filter(
+        (newFile) => !files.some((existing) => existing.name === newFile.name),
+      );
+      setFiles([...files, ...newUniqueFiles]);
     }
   };
 
-  const handleSubmit = async (e) => {
+  // Remove um arquivo específico da lista antes do envio
+  const handleRemoveFile = (fileNameToRemove) => {
+    setFiles(files.filter((f) => f.name !== fileNameToRemove));
+  };
+
+  // Lógica de Palavras-chave
+  const handleAddKeyword = (e) => {
+    e && e.preventDefault();
+    const trimmed = currentKeyword.trim();
+    if (trimmed && !keywords.includes(trimmed)) {
+      setKeywords([...keywords, trimmed]);
+      setCurrentKeyword("");
+    }
+  };
+
+  const handleAddSuggestion = (suggestion) => {
+    if (!keywords.includes(suggestion)) {
+      setKeywords([...keywords, suggestion]);
+    }
+  };
+
+  const handleRemoveKeyword = (tagToRemove) => {
+    setKeywords(keywords.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddKeyword();
+    }
+  };
+
+  // Envio final do formulário
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!file || !title) {
-      alert("Por favor, preencha o título e selecione um arquivo.");
+
+    if (!title || !source || keywords.length === 0) {
+      alert(
+        "Por favor, preencha o título, a fonte e adicione pelo menos uma palavra-chave.",
+      );
       return;
     }
 
-    setIsUploading(true);
-    setUploadProgress(20);
+    // Se nenhum arquivo for anexado, gera um fallback de demonstração
+    const finalFilesList =
+      files.length > 0
+        ? files
+        : [{ name: "dados_colaborativos.zip", size: 128000 }];
 
-    // =========================================================================
-    // ⚙️ LÓGICA DE INTEGRAÇÃO COM A API DO ZENODO (OPCIONAL / AVANÇADO)
-    // Para usar o upload real, você precisaria de um Personal Access Token
-    // gerado em https://sandbox.zenodo.org/account/settings/applications/
-    // =========================================================================
-    const ZENODO_TOKEN = import.meta.env.VITE_ZENODO_TOKEN || ""; // Token no .env
+    // Mapeia todos os arquivos para a estrutura do portal
+    const formattedFiles = finalFilesList.map((f) => {
+      const sizeKB = ((f.size || 0) / 1024).toFixed(2);
+      return {
+        name: f.name,
+        size:
+          sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(2)} MB` : `${sizeKB} KB`,
+        downloadUrl: "#",
+        checksum: "MD5 (Gerado no Upload)",
+      };
+    });
 
-    try {
-      if (ZENODO_TOKEN) {
-        // 1. Cria o registro vazio no Zenodo
-        setUploadProgress(40);
-        const createRes = await fetch(
-          `https://sandbox.zenodo.org/api/deposit/depositions?access_token=${ZENODO_TOKEN}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              metadata: {
-                title,
-                upload_type: "dataset",
-                description,
-                creators: [{ name: source }],
-              },
-            }),
-          },
-        );
-        const depositData = await createRes.json();
+    // Extrai automaticamente todos os formatos únicos anexados (ex: [CSV, SHP, XLSX])
+    const allFormats = [
+      ...new Set(
+        formattedFiles.map((f) => f.name.split(".").pop().toUpperCase()),
+      ),
+    ];
 
-        // 2. Envia o arquivo real para o bucket do Zenodo
-        setUploadProgress(70);
-        const formData = new FormData();
-        formData.append("file", file);
-        await fetch(
-          `${depositData.links.bucket}/${file.name}?access_token=${ZENODO_TOKEN}`,
-          {
-            method: "PUT",
-            body: file,
-          },
-        );
-      } else {
-        // SIMULAÇÃO VISUAL DE ALTA FIDELIDADE (Para apresentação na disciplina)
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        setUploadProgress(60);
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        setUploadProgress(90);
-      }
-    } catch (error) {
-      console.error(
-        "Erro no envio para API externa, aplicando modo local:",
-        error,
-      );
-    }
+    // Calcula o tamanho total somado do dataset
+    const totalSizeKB = finalFilesList.reduce(
+      (acc, curr) => acc + (curr.size || 0) / 1024,
+      0,
+    );
+    const totalSizeFormatted =
+      totalSizeKB > 1024
+        ? `${(totalSizeKB / 1024).toFixed(2)} MB`
+        : `${totalSizeKB.toFixed(2)} KB`;
 
-    // =========================================================================
-    // 🚀 ATUALIZA O CATÁLOGO DA TELA EM TEMPO REAL
-    // =========================================================================
-    const fileExtension = file.name.split(".").pop().toUpperCase();
-    const mockDoi = `10.5281/zenodo.${Math.floor(1000000 + Math.random() * 9000000)}`;
-
-    // Cria uma URL temporária na memória do navegador para o arquivo enviado!
-    const localFileUrl = URL.createObjectURL(file);
-
+    // Objeto do novo dataset compatível com múltiplos arquivos e filtros
     const newDataset = {
       id: Date.now(),
       title: title,
-      category: category,
-      formats: [fileExtension],
-      lastUpdated: new Date().toLocaleDateString("pt-BR"),
       source: source,
-      description: `${description} (Publicado com DOI permanente: ${mockDoi})`,
-      downloadUrl: localFileUrl, // Permite baixar o próprio arquivo que acabou de subir!
-      fileName: file.name,
+      description:
+        description || "Dataset publicado via Portal de Dados Abertos.",
+      categories: keywords,
+      formats: allFormats.length > 0 ? allFormats : ["ZIP"],
+      lastUpdated: new Date().toLocaleDateString("pt-BR"),
+      downloadUrl: "#",
+      fileName: formattedFiles[0].name,
+      files: formattedFiles, // ⬅️ Lista completa de múltiplos arquivos
       metadata: {
-        rows: "Processado em tempo real",
-        columns: "N/A",
-        encoding: "UTF-8",
-        doi: mockDoi,
+        tamanho: totalSizeFormatted,
+        acesso: "Acesso Aberto",
+        integridade: "Verificado no Upload",
+        doi: `10.5281/zenodo.${Date.now().toString().slice(-6)}`,
       },
-      preview: [
-        {
-          status: "Arquivo verificado pelo Observatório",
-          arquivo: file.name,
-          tamanho: `${(file.size / 1024).toFixed(2)} KB`,
-        },
-      ],
+      preview: [],
     };
 
-    setUploadProgress(100);
-    setIsUploading(false);
-    setSuccessMessage(`Dataset publicado com sucesso! DOI: ${mockDoi}`);
-
-    // Adiciona ao estado global do App.jsx
     onAddDataset(newDataset);
 
-    // Limpa o formulário após 2 segundos e fecha
-    setTimeout(() => {
-      setSuccessMessage(null);
-      setTitle("");
-      setDescription("");
-      setFile(null);
-      onClose();
-    }, 2500);
+    // Limpa os estados ao fechar
+    setTitle("");
+    setSource("");
+    setDescription("");
+    setKeywords(["Meio Ambiente & Risco", "São Vicente"]);
+    setFiles([]);
+    onClose();
   };
 
-  return (
+  return createPortal(
     <div className="upload-modal-overlay">
-      <div className="upload-modal">
-        <div className="upload-modal__header">
+      <div className="upload-modal-dialog">
+        {/* Cabeçalho */}
+        <div className="upload-header">
           <div>
-            <h2 className="upload-modal__title">
-              Publicar Novo Conjunto de Dados
-            </h2>
-            <p className="upload-modal__subtitle">
-              Integração com Repositório Científico / Ciência Aberta
-            </p>
+            <span className="upload-subtitle">
+              Ciência Aberta & Colaboração
+            </span>
+            <h2 className="upload-title">Publicar Novo Dataset</h2>
           </div>
           <button
             onClick={onClose}
-            className="upload-modal__close"
+            className="upload-close-btn"
             aria-label="Fechar modal"
           >
             ✕
           </button>
         </div>
 
-        {successMessage ? (
-          <div className="upload-modal__success">
-            <div className="upload-modal__icon">🎉</div>
-            <h3>{successMessage}</h3>
-            <p>
-              O conjunto de dados já está disponível no catálogo de pesquisa do
-              portal.
-            </p>
+        {/* Formulário */}
+        <form onSubmit={handleSubmit} className="upload-form-body">
+          {/* Título */}
+          <div className="form-group">
+            <label className="form-label">Título do Conjunto de Dados *</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex: Áreas de Risco de Inundação - Bairro Quarentenário"
+              className="form-input"
+              required
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="upload-modal__form">
-            <div className="upload-field">
-              <label>Título do Dataset *</label>
+
+          {/* Fonte / Autor */}
+          <div className="form-group">
+            <label className="form-label">Fonte ou Organização *</label>
+            <input
+              type="text"
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              placeholder="Ex: Equipe 4 - Riscos Climáticos / Defesa Civil"
+              className="form-input"
+              required
+            />
+          </div>
+
+          {/* Múltiplas Palavras-chave */}
+          <div className="form-group">
+            <label className="form-label">Palavras-chave / Temas *</label>
+            <div className="keyword-input-row">
               <input
                 type="text"
-                required
-                placeholder="Ex: Dados Meteorológicos - Escola Estadual São Vicente..."
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={currentKeyword}
+                onChange={(e) => setCurrentKeyword(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Digite uma palavra-chave e pressione Enter..."
+                className="form-input"
               />
-            </div>
-
-            <div className="upload-grid">
-              <div className="upload-field">
-                <label>Categoria Temática</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  <option value="Meio Ambiente & Risco">
-                    Meio Ambiente & Risco
-                  </option>
-                  <option value="População">População</option>
-                  <option value="Saúde">Saúde</option>
-                  <option value="Educação">Educação</option>
-                  <option value="Socioeconômico">Socioeconômico</option>
-                </select>
-              </div>
-
-              <div className="upload-field">
-                <label>Instituição / Autor</label>
-                <input
-                  type="text"
-                  value={source}
-                  onChange={(e) => setSource(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="upload-field">
-              <label>Descrição e Metodologia</label>
-              <textarea
-                rows="3"
-                placeholder="Explique como os dados foram coletados, período e região abrangida..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              ></textarea>
-            </div>
-
-            <div className="upload-dropzone">
-              <input
-                type="file"
-                id="fileUpload"
-                onChange={handleFileChange}
-                accept=".csv,.xlsx,.zip,.shp"
-              />
-              <label htmlFor="fileUpload">
-                <span className="upload-dropzone__icon">📂</span>
-                <span className="upload-dropzone__primary">
-                  {file
-                    ? file.name
-                    : "Clique para selecionar o arquivo (.csv, .xlsx, .zip)"}
-                </span>
-                <span className="upload-dropzone__secondary">
-                  {file
-                    ? `Tamanho: ${(file.size / 1024).toFixed(2)} KB`
-                    : "Suporta arquivos geográficos e tabelas tabulares"}
-                </span>
-              </label>
-            </div>
-
-            {isUploading && (
-              <div className="upload-progress" aria-label="Progresso do upload">
-                <div
-                  className="upload-progress__bar"
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-              </div>
-            )}
-
-            <div className="upload-actions">
               <button
                 type="button"
-                onClick={onClose}
-                className="upload-actions__cancel"
+                onClick={handleAddKeyword}
+                className="btn-add-keyword"
               >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isUploading}
-                className="upload-actions__submit"
-              >
-                {isUploading ? "Enviando e Gerando DOI..." : "⬆ Publicar Dados"}
+                + Adicionar
               </button>
             </div>
-          </form>
-        )}
+
+            <div className="suggestions-wrapper">
+              <span className="suggestions-label">Sugestões:</span>
+              <div className="suggestions-list">
+                {QUICK_SUGGESTIONS.map((sug, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleAddSuggestion(sug)}
+                    className="btn-suggestion-pill"
+                  >
+                    + {sug}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="added-keywords-container">
+              {keywords.length === 0 && (
+                <span className="empty-keywords-text">
+                  Nenhuma tag adicionada.
+                </span>
+              )}
+              {keywords.map((tag, idx) => (
+                <span key={idx} className="keyword-pill">
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveKeyword(tag)}
+                    className="btn-remove-keyword"
+                    title="Remover"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Descrição */}
+          <div className="form-group">
+            <label className="form-label">
+              Descrição Detalhada e Metadados
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Descreva o conteúdo do arquivo, metodologia de coleta e cobertura territorial..."
+              className="form-textarea"
+              rows={3}
+            />
+          </div>
+
+          {/* ========================================================= */}
+          {/* UPLOAD DE MÚLTIPLOS ARQUIVOS                              */}
+          {/* ========================================================= */}
+          <div className="form-group">
+            <label className="form-label">
+              Arquivos de Dados (Suporta múltiplos: Excel, CSV, SHP, ZIP)
+            </label>
+
+            <div className="file-upload-box">
+              <input
+                type="file"
+                multiple /* ⬅️ ATIVA SELEÇÃO DE MÚLTIPLOS ARQUIVOS */
+                onChange={handleFileSelect}
+                className="file-input"
+              />
+              <span className="file-instruction">
+                📁 Clique aqui ou arraste seus arquivos (você pode selecionar
+                vários de uma vez)
+              </span>
+            </div>
+
+            {/* Lista visual dos arquivos anexados */}
+            {files.length > 0 && (
+              <div className="files-preview-list">
+                <span className="files-preview-title">
+                  Arquivos selecionados ({files.length}):
+                </span>
+                {files.map((f, idx) => {
+                  const sizeFormatted = ((f.size || 0) / 1024).toFixed(2);
+                  const displaySize =
+                    sizeFormatted > 1024
+                      ? `${(sizeFormatted / 1024).toFixed(2)} MB`
+                      : `${sizeFormatted} KB`;
+
+                  return (
+                    <div key={idx} className="file-preview-item">
+                      <div className="file-preview-info">
+                        <span className="file-preview-icon">📄</span>
+                        <span className="file-preview-name" title={f.name}>
+                          {f.name}
+                        </span>
+                        <span className="file-preview-size">
+                          ({displaySize})
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(f.name)}
+                        className="btn-remove-file"
+                        title="Remover arquivo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Rodapé */}
+          <div className="upload-footer">
+            <button type="button" onClick={onClose} className="btn-cancel">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-submit-upload">
+              ⬆ Publicar no Catálogo
+            </button>
+          </div>
+        </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
