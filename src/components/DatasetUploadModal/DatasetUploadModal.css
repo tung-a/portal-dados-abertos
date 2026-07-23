@@ -70,7 +70,7 @@
 .upload-subtitle {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #059669;
+  color: #007a4a;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: block;
@@ -146,8 +146,8 @@
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #059669;
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+  border-color: #007a4a;
+  box-shadow: 0 0 0 3px rgba(0, 122, 74, 0.15);
 }
 
 /* ==========================================================================
@@ -159,7 +159,7 @@
 }
 
 .btn-add-keyword {
-  background-color: #0f172a;
+  background-color: #007a4a;
   color: #ffffff;
   font-weight: 600;
   font-size: 0.85rem;
@@ -172,7 +172,7 @@
 }
 
 .btn-add-keyword:hover {
-  background-color: #334155;
+  background-color: #005f3a;
 }
 
 /* Sugestões Rápidas */
@@ -209,9 +209,9 @@
 }
 
 .btn-suggestion-pill:hover {
-  background-color: #ecfdf5;
-  border-color: #059669;
-  color: #059669;
+  background-color: rgba(0, 122, 74, 0.1);
+  border-color: var(--coop-verde);
+  color: var(--coop-verde);
 }
 
 /* Lista de Tags Adicionadas */
@@ -220,8 +220,8 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.75rem;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: rgba(249, 243, 240, 0.8);
+  border: 1px solid rgba(135, 74, 51, 0.14);
   border-radius: 0.5rem;
   min-height: 3.5rem;
   align-items: center;
@@ -237,9 +237,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background-color: #ecfdf5;
-  border: 1px solid #6ee7b7;
-  color: #065f46;
+  background-color: rgba(0, 122, 74, 0.1);
+  border: 1px solid rgba(0, 122, 74, 0.2);
+  color: var(--coop-verde);
   font-size: 0.8rem;
   font-weight: 700;
   padding: 0.25rem 0.6rem;
@@ -249,7 +249,7 @@
 .btn-remove-keyword {
   background: transparent;
   border: none;
-  color: #059669;
+  color: var(--coop-verde);
   font-weight: 800;
   cursor: pointer;
   font-size: 0.85rem;
@@ -260,7 +260,7 @@
 }
 
 .btn-remove-keyword:hover {
-  color: #047857;
+  color: var(--coop-escuro);
 }
 
 /* ==========================================================================
@@ -268,11 +268,11 @@
    ========================================================================== */
 .file-upload-box {
   position: relative;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed rgba(0, 122, 74, 0.28);
   border-radius: 0.5rem;
   padding: 1.25rem;
   text-align: center;
-  background-color: #f8fafc;
+  background-color: rgba(249, 243, 240, 0.85);
   cursor: pointer;
   transition:
     border-color 0.2s ease,
@@ -280,8 +280,8 @@
 }
 
 .file-upload-box:hover {
-  border-color: #059669;
-  background-color: #ecfdf5;
+  border-color: var(--coop-laranja);
+  background-color: rgba(232, 119, 34, 0.08);
 }
 
 .file-input {
@@ -327,22 +327,23 @@
 }
 
 .btn-submit-upload {
-  background-color: #059669;
+  background-color: #007a4a;
   border: none;
   color: #ffffff;
-  font-weight: 600;
+  font-family: var(--fonte-texto);
+  font-weight: 700;
   font-size: 0.875rem;
   padding: 0.65rem 1.5rem;
   border-radius: 0.5rem;
   cursor: pointer;
-  box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(0, 122, 74, 0.2);
   transition:
     background-color 0.2s ease,
     transform 0.1s ease;
 }
 
 .btn-submit-upload:hover {
-  background-color: #047857;
+  background-color: #005f3a;
 }
 
 .btn-submit-upload:active {

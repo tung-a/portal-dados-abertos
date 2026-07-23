@@ -26,7 +26,7 @@
   border: 0;
   padding: 0;
   background: transparent;
-  color: #059669;
+  color: #007a4a;
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
@@ -74,12 +74,13 @@
 
 .filter-button:hover,
 .filter-chip:hover {
-  background: #f9fafb;
+  background-color: rgba(0, 122, 74, 0.1);
+  color: var(--coop-escuro);
 }
 
 .filter-button.is-active {
-  background: #d1fae5;
-  color: #065f46;
+  background: #007a4a;
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -101,8 +102,8 @@
 }
 
 .filter-chip.is-active {
-  border-color: #059669;
-  background: #059669;
+  border-color: #007a4a;
+  background: #007a4a;
   color: #fff;
 }
 

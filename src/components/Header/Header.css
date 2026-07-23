@@ -2,11 +2,12 @@
    CONTAINER PRINCIPAL DO CABEÇALHO
    ========================================================================== */
 .portal-header {
-  background: linear-gradient(135deg, #059669 0%, #047857 50%, #064e3b 100%);
+  background-color: #007a4a !important;
+  background-image: none !important;
   color: #ffffff;
   padding: 3rem 1.5rem 3.5rem 1.5rem;
-  border-bottom: 4px solid #10b981;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15);
+  border-bottom: 4px solid #e87722;
+  box-shadow: 0 4px 20px -2px rgba(26, 60, 44, 0.2);
 }
 
 .header-content-wrapper {
@@ -17,6 +18,24 @@
   gap: 2rem;
 }
 
+.header-branding-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.header-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.92);
+  padding: 0.4rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
 /* ==========================================================================
    TÍTULOS E CONTEXTO INSTITUCIONAL
    ========================================================================== */
@@ -25,12 +44,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .header-subtitle-top {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #a7f3d0;
+  color: rgba(255, 255, 255, 0.92);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -63,7 +83,7 @@
 
 .intro-main-paragraph {
   font-size: 1rem;
-  color: #ecfdf5;
+  color: rgba(255, 255, 255, 0.95);
   line-height: 1.7;
   margin: 0;
 }
@@ -71,7 +91,7 @@
 .intro-callout {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #d1fae5;
+  color: rgba(255, 255, 255, 0.9);
   line-height: 1.6;
   margin: 0;
 }
@@ -99,8 +119,8 @@
 }
 
 .theme-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 0.75rem;
   padding: 1.25rem;
   display: flex;
@@ -114,7 +134,7 @@
 }
 
 .theme-card:hover {
-  background-color: rgba(255, 255, 255, 0.18);
+  background-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
 }
 
@@ -142,7 +162,7 @@
 
 .theme-desc {
   font-size: 0.75rem;
-  color: #d1fae5;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
   line-height: 1.5;
 }
@@ -173,7 +193,7 @@
 }
 
 .search-input-wrapper:focus-within {
-  border-color: #34d399;
+  border-color: var(--coop-laranja);
   box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4);
 }
 

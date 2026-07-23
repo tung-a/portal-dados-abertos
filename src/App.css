@@ -9,11 +9,9 @@
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
-  background-color: #f8fafc;
-  color: #1e293b;
+  font-family: var(--fonte-texto);
+  background-color: var(--coop-fundo-claro);
+  color: var(--coop-escuro);
   line-height: 1.5;
 }
 
@@ -81,22 +79,23 @@ section.flex-1 {
 .catalog-title-wrapper h2 {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--coop-escuro);
+  font-family: var(--fonte-titulo);
 }
 
 .catalog-subtitle {
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--coop-marrom);
   margin-top: 0.2rem;
 }
 
 /* Badge animado de sincronização com a API do Zenodo */
 .sync-badge {
   font-size: 0.75rem;
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: rgba(0, 122, 74, 0.12);
+  color: var(--coop-verde);
   font-weight: 700;
   padding: 0.2rem 0.6rem;
   border-radius: 9999px;
@@ -119,9 +118,10 @@ section.flex-1 {
 /* Botão principal de Publicar Dataset */
 .btn-publish {
   width: 100%;
-  background-color: #059669;
+  background-color: #007a4a;
   color: #ffffff;
-  font-weight: 600;
+  font-family: var(--fonte-texto);
+  font-weight: 700;
   font-size: 0.9rem;
   padding: 0.65rem 1.25rem;
   border: none;
@@ -141,7 +141,7 @@ section.flex-1 {
 }
 
 .btn-publish:hover {
-  background-color: #047857;
+  background-color: #005f3a;
 }
 
 .btn-publish:active {
@@ -183,7 +183,7 @@ section.flex-1 {
 .btn-clear-filters {
   background: none;
   border: none;
-  color: #059669;
+  color: var(--coop-verde);
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
@@ -191,7 +191,7 @@ section.flex-1 {
 }
 
 .btn-clear-filters:hover {
-  color: #047857;
+  color: var(--coop-escuro);
 }
 
 /* ==========================================================================
@@ -246,9 +246,9 @@ footer {
 }
 
 .btn-pagination:hover:not(:disabled) {
-  background-color: #ecfdf5;
-  border-color: #059669;
-  color: #059669;
+  background-color: rgba(0, 122, 74, 0.1);
+  border-color: var(--coop-verde);
+  color: var(--coop-verde);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 

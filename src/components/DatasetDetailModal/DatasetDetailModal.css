@@ -31,17 +31,18 @@
    CAIXA DO MODAL
    ========================================================================== */
 .modal-dialog {
-  background-color: #ffffff;
+  background-color: #fffdfb;
   border-radius: 0.75rem;
   max-width: 54rem;
   width: 100%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(26, 60, 44, 0.2);
   overflow: hidden;
   position: relative;
   animation: scaleUp 0.2s ease-out;
+  border: 1px solid rgba(135, 74, 51, 0.14);
 }
 
 @keyframes scaleUp {
@@ -63,8 +64,8 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  background-color: #ffffff;
+  border-bottom: 1px solid rgba(135, 74, 51, 0.14);
+  background-color: rgba(255, 255, 255, 0.92);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -81,9 +82,9 @@
   display: inline-block;
   font-size: 0.7rem;
   font-weight: 700;
-  color: #059669;
-  background-color: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  color: var(--coop-azul);
+  background-color: rgba(0, 163, 224, 0.12);
+  border: 1px solid rgba(0, 163, 224, 0.24);
   padding: 0.15rem 0.6rem;
   border-radius: 9999px;
   text-transform: uppercase;
@@ -93,7 +94,7 @@
 .modal-title {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--coop-escuro);
   margin: 0;
   line-height: 1.3;
 }
@@ -230,8 +231,8 @@
 }
 
 .btn-file-download {
-  background-color: #f1f5f9;
-  color: #334155;
+  background-color: #007a4a;
+  color: #ffffff;
   font-weight: 600;
   font-size: 0.8rem;
   padding: 0.45rem 0.9rem;
@@ -241,10 +242,11 @@
     background-color 0.15s ease,
     color 0.15s ease;
   flex-shrink: 0;
+  border: 1px solid #007a4a;
 }
 
 .btn-file-download:hover {
-  background-color: #059669;
+  background-color: #005f3a;
   color: #ffffff;
 }
 
@@ -297,7 +299,7 @@
 }
 
 .metadata-value.text-emerald {
-  color: #059669;
+  color: var(--coop-verde);
 }
 
 .metadata-value.font-mono {
@@ -433,7 +435,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: #059669;
+  background-color: #007a4a;
   color: #ffffff;
   font-weight: 600;
   font-size: 0.875rem;
@@ -441,7 +443,7 @@
   border-radius: 0.5rem;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(0, 122, 74, 0.2);
   transition:
     background-color 0.2s ease,
     transform 0.1s ease;
@@ -450,7 +452,7 @@
 }
 
 .btn-download-all:hover {
-  background-color: #047857;
+  background-color: #005f3a;
 }
 
 .btn-download-all:active {

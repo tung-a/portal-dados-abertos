@@ -1,4 +1,5 @@
 import "./Header.css";
+import logo from "../../assets/logos/coop_clima[RGB]_fundo_branco.jpg";
 
 export default function Header({ searchTerm, setSearchTerm }) {
   return (
@@ -6,10 +7,19 @@ export default function Header({ searchTerm, setSearchTerm }) {
       <div className="header-content-wrapper">
         {/* 1. Títulos e Contexto Institucional */}
         <div className="header-branding">
-          <span className="header-subtitle-top">
-            Observatório de Justiça Climática de São Vicente
-          </span>
-          <h1 className="header-title">Portal de Dados Abertos</h1>
+          <div className="header-branding-row">
+            <img
+              src={logo}
+              alt="Logo Coop Clima São Vicente"
+              className="header-logo"
+            />
+            <div className="header-branding">
+              <span className="header-subtitle-top">
+                Observatório de Justiça Climática de São Vicente
+              </span>
+              <h1 className="header-title">Portal de Dados Abertos</h1>
+            </div>
+          </div>
         </div>
 
         {/* 2. Texto Introdutório Enriquecido */}
@@ -29,54 +39,9 @@ export default function Header({ searchTerm, setSearchTerm }) {
           </p>
         </div>
 
-        {/* 3. Grid Temático (Os 4 Eixos de Dados) */}
-        <div className="header-themes-grid">
-          <div className="theme-card">
-            <span className="theme-icon">📊</span>
-            <div className="theme-info">
-              <h3 className="theme-title">Bases Territoriais</h3>
-              <p className="theme-desc">
-                População, renda, densidade e setores censitários (IBGE 2022).
-              </p>
-            </div>
-          </div>
-
-          <div className="theme-card">
-            <span className="theme-icon">⚠️</span>
-            <div className="theme-info">
-              <h3 className="theme-title">Riscos Climáticos</h3>
-              <p className="theme-desc">
-                Áreas de inundação, deslizamentos, favelas e zonas contaminadas.
-              </p>
-            </div>
-          </div>
-
-          <div className="theme-card">
-            <span className="theme-icon">🏥</span>
-            <div className="theme-info">
-              <h3 className="theme-title">Serviços Públicos</h3>
-              <p className="theme-desc">
-                Localização e cobertura territorial de escolas e unidades de
-                saúde.
-              </p>
-            </div>
-          </div>
-
-          <div className="theme-card">
-            <span className="theme-icon">🌱</span>
-            <div className="theme-info">
-              <h3 className="theme-title">Ciência Cidadã</h3>
-              <p className="theme-desc">
-                Dados da estação meteorológica e observações escolares do clima.
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* 4. Barra de Busca (Posicionada no fim, logo abaixo dos textos) */}
         <div className="header-search-container">
           <div className="search-input-wrapper">
-            <span className="search-icon">🔍</span>
             <input
               type="text"
               value={searchTerm}
