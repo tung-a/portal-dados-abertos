@@ -1,17 +1,34 @@
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import "./DatasetDetailModal.css";
 
 export default function DatasetDetailModal({ dataset, onClose }) {
+  // =========================================================================
+  // 1. TODOS OS HOOKS DECLARADOS NO TOPO (SEM CONDICIONAIS ANTES DELES)
+  // =========================================================================
+  const [fileSearchTerm, setFileSearchTerm] = useState("");
+  const [selectedFileFormat, setSelectedFileFormat] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
+
+  // Reseta os filtros internos sempre que um novo dataset for aberto
+  useEffect(() => {
+    setFileSearchTerm("");
+    setSelectedFileFormat("");
+    setIsCopied(false);
+  }, [dataset]);
+
+  // =========================================================================
+  // 2. VERIFICAÇÃO CONDICIONAL SEGURA
+  // =========================================================================
   if (!dataset) return null;
 
   const meta = dataset.metadata || {};
-
   const isZenodoMeta =
     meta.tamanho !== undefined ||
     meta.doi !== undefined ||
     meta.integridade !== undefined;
 
-  // Normaliza os arquivos para aceitar múltiplos downloads ou fallback para arquivo único
+  // Normalização da lista de arquivos
   const filesList =
     Array.isArray(dataset.files) && dataset.files.length > 0
       ? dataset.files
@@ -24,33 +41,60 @@ export default function DatasetDetailModal({ dataset, onClose }) {
           },
         ];
 
-  // Normaliza as categorias para permitir múltiplas etiquetas no cabeçalho
   const categoriesList = Array.isArray(dataset.categories)
     ? dataset.categories
     : [dataset.category || "Geral"];
 
-  // Validação segura da tabela de amostra
   const hasValidPreview =
     Array.isArray(dataset.preview) &&
     dataset.preview.length > 0 &&
     typeof dataset.preview[0] === "object" &&
     dataset.preview[0] !== null;
 
-  // Baixa todos os arquivos em sequência com um intervalo seguro de 400ms
+  // =========================================================================
+  // 3. LÓGICA DE FILTRAGEM E PESQUISA INTERNA DE ARQUIVOS
+  // =========================================================================
+  // Extrai todas as extensões únicas presentes nos arquivos deste card (ex: [CSV, SHP, ZIP])
+  const availableFileFormats = [
+    ...new Set(filesList.map((f) => f.name.split(".").pop().toUpperCase())),
+  ];
+
+  // Filtra os arquivos com base na digitação e no botão de formato clicado
+  const filteredFiles = filesList.filter((file) => {
+    const matchesName = file.name
+      .toLowerCase()
+      .includes(fileSearchTerm.toLowerCase());
+    const fileExt = file.name.split(".").pop().toUpperCase();
+    const matchesFormat = selectedFileFormat
+      ? fileExt === selectedFileFormat
+      : true;
+    return matchesName && matchesFormat;
+  });
+
+  // =========================================================================
+  // 4. AÇÕES DO USUÁRIO (DOWNLOAD EM LOTE & COMPARTILHAMENTO)
+  // =========================================================================
   const handleDownloadAll = () => {
-    filesList.forEach((file, index) => {
+    filteredFiles.forEach((file, index) => {
       setTimeout(() => {
         window.open(file.downloadUrl, "_blank");
       }, index * 400);
     });
   };
 
+  const handleShareDirectLink = () => {
+    const directUrl = `${window.location.origin}${window.location.pathname}?id=${dataset.id}`;
+    navigator.clipboard.writeText(directUrl);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 3000); // Volta ao texto original após 3 segundos
+  };
+
   return createPortal(
     <div className="modal-overlay">
       <div className="modal-dialog">
-        {/* Cabeçalho com Múltiplas Categorias */}
+        {/* Cabeçalho com Categorias, Título e Botão de Compartilhar */}
         <div className="modal-header">
-          <div>
+          <div className="header-info-col">
             <div className="modal-tags-container">
               {categoriesList.map((cat, index) => (
                 <span key={index} className="modal-category-tag">
@@ -63,13 +107,23 @@ export default function DatasetDetailModal({ dataset, onClose }) {
               Fonte: {dataset.source || "Não informada"}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="modal-close"
-            aria-label="Fechar modal"
-          >
-            ✕
-          </button>
+
+          <div className="header-actions-col">
+            <button
+              onClick={handleShareDirectLink}
+              className={`btn-share-link ${isCopied ? "copied" : ""}`}
+              title="Copiar link direto para este dataset"
+            >
+              {isCopied ? "✅ Link Copiado!" : "🔗 Compartilhar Link"}
+            </button>
+            <button
+              onClick={onClose}
+              className="modal-close"
+              aria-label="Fechar modal"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* Corpo do Modal */}
@@ -82,41 +136,120 @@ export default function DatasetDetailModal({ dataset, onClose }) {
             </p>
           </div>
 
-          {/* Lista de Múltiplos Arquivos para Download Individual */}
+          {/* ========================================================= */}
+          {/* SEÇÃO DE ARQUIVOS COM PESQUISA E FILTRO INTERNO           */}
+          {/* ========================================================= */}
           <div className="modal-section">
             <div className="section-header-row">
-              <h3 className="section-title">
-                Arquivos Disponíveis ({filesList.length})
-              </h3>
-              <span className="section-subtitle">
-                Clique em um arquivo para baixar individualmente
-              </span>
+              <div>
+                <h3 className="section-title">
+                  Arquivos Disponíveis ({filesList.length})
+                </h3>
+                <span className="section-subtitle">
+                  Filtre por formato ou busque pelo nome para baixar
+                </span>
+              </div>
             </div>
 
-            <div className="files-list-container">
-              {filesList.map((file, idx) => (
-                <div key={idx} className="file-item-row">
-                  <div className="file-info-col">
-                    <span className="file-icon">📄</span>
-                    <div>
-                      <span className="file-name" title={file.name}>
-                        {file.name}
-                      </span>
-                      <span className="file-meta">
-                        {file.size} • {file.checksum}
-                      </span>
-                    </div>
-                  </div>
-                  <a
-                    href={file.downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-file-download"
-                  >
-                    ⬇ Baixar
-                  </a>
+            {/* Barra de Busca Interna e Pílulas de Extensão */}
+            {filesList.length > 1 && (
+              <div className="internal-file-controls">
+                {/* 1. Input de Pesquisa Expandido (Ocupa a primeira linha inteira) */}
+                <div className="file-search-wrapper">
+                  <input
+                    type="text"
+                    value={fileSearchTerm}
+                    onChange={(e) => setFileSearchTerm(e.target.value)}
+                    placeholder="Buscar arquivo específico por nome..."
+                    className="file-search-input"
+                  />
+                  {fileSearchTerm && (
+                    <button
+                      onClick={() => setFileSearchTerm("")}
+                      className="file-search-clear"
+                      title="Limpar busca"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
-              ))}
+
+                {/* 2. Filtros Rápidos por Extensão (Organizados na segunda linha) */}
+                <div className="file-format-pills">
+                  <span className="format-pill-label">
+                    Filtrar por formato:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFileFormat("")}
+                    className={`format-pill ${selectedFileFormat === "" ? "active" : ""}`}
+                  >
+                    Todos ({filesList.length})
+                  </button>
+                  {availableFileFormats.map((fmt) => {
+                    const count = filesList.filter(
+                      (f) => f.name.split(".").pop().toUpperCase() === fmt,
+                    ).length;
+                    return (
+                      <button
+                        key={fmt}
+                        type="button"
+                        onClick={() =>
+                          setSelectedFileFormat(
+                            fmt === selectedFileFormat ? "" : fmt,
+                          )
+                        }
+                        className={`format-pill ${selectedFileFormat === fmt ? "active" : ""}`}
+                      >
+                        {fmt} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Lista de Arquivos Filtrada */}
+            <div className="files-list-container">
+              {filteredFiles.length === 0 ? (
+                <div className="empty-files-message">
+                  Nenhum arquivo encontrado para{" "}
+                  <strong>"{fileSearchTerm || selectedFileFormat}"</strong>.
+                  <button
+                    onClick={() => {
+                      setFileSearchTerm("");
+                      setSelectedFileFormat("");
+                    }}
+                    className="btn-reset-file-filter"
+                  >
+                    Limpar filtros de arquivo
+                  </button>
+                </div>
+              ) : (
+                filteredFiles.map((file, idx) => (
+                  <div key={idx} className="file-item-row">
+                    <div className="file-info-col">
+                      <span className="file-icon">📄</span>
+                      <div>
+                        <span className="file-name" title={file.name}>
+                          {file.name}
+                        </span>
+                        <span className="file-meta">
+                          {file.size} • {file.checksum}
+                        </span>
+                      </div>
+                    </div>
+                    <a
+                      href={file.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-file-download"
+                    >
+                      ⬇ Baixar
+                    </a>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -128,68 +261,41 @@ export default function DatasetDetailModal({ dataset, onClose }) {
                 : "Metadados Técnicos"}
             </h3>
 
-            {isZenodoMeta ? (
-              <div className="metadata-grid">
-                <div className="metadata-item">
-                  <span className="metadata-label">Total de Arquivos</span>
-                  <span className="metadata-value">
-                    {filesList.length} arquivo(s)
-                  </span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Tipo de Acesso</span>
-                  <span className="metadata-value text-emerald">
-                    {meta.acesso || "Aberto"}
-                  </span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Integridade (MD5)</span>
-                  <span
-                    className="metadata-value font-mono truncate"
-                    title={meta.integridade}
-                  >
-                    {meta.integridade || "Verificado"}
-                  </span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Identificador DOI</span>
-                  <span
-                    className="metadata-value font-mono truncate"
-                    title={meta.doi}
-                  >
-                    {meta.doi || "N/A"}
-                  </span>
-                </div>
+            <div className="metadata-grid">
+              <div className="metadata-item">
+                <span className="metadata-label">Total de Arquivos</span>
+                <span className="metadata-value">
+                  {filesList.length} arquivo(s)
+                </span>
               </div>
-            ) : (
-              <div className="metadata-grid">
-                <div className="metadata-item">
-                  <span className="metadata-label">Registros</span>
-                  <span className="metadata-value">{meta.rows || "N/A"}</span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Colunas/Atributos</span>
-                  <span className="metadata-value">
-                    {meta.columns || "N/A"}
-                  </span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Codificação</span>
-                  <span className="metadata-value">
-                    {meta.encoding || "UTF-8"}
-                  </span>
-                </div>
-                {meta.crs && (
-                  <div className="metadata-item">
-                    <span className="metadata-label">Sistema (CRS)</span>
-                    <span className="metadata-value">{meta.crs}</span>
-                  </div>
-                )}
+              <div className="metadata-item">
+                <span className="metadata-label">Tipo de Acesso</span>
+                <span className="metadata-value text-emerald">
+                  {meta.acesso || "Aberto"}
+                </span>
               </div>
-            )}
+              <div className="metadata-item">
+                <span className="metadata-label">Integridade (MD5)</span>
+                <span
+                  className="metadata-value font-mono truncate"
+                  title={meta.integridade}
+                >
+                  {meta.integridade || "Verificado"}
+                </span>
+              </div>
+              <div className="metadata-item">
+                <span className="metadata-label">Identificador DOI</span>
+                <span
+                  className="metadata-value font-mono truncate"
+                  title={meta.doi}
+                >
+                  {meta.doi || "N/A"}
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Visualização Preliminar (Amostra / Status do Arquivo) */}
+          {/* Visualização Preliminar (Tabela de Amostra) */}
           {hasValidPreview && (
             <div className="modal-section">
               <h3 className="section-title">
@@ -246,19 +352,23 @@ export default function DatasetDetailModal({ dataset, onClose }) {
           </div>
 
           <div className="footer-actions">
-            {filesList.length > 1 ? (
+            {filteredFiles.length > 1 ? (
               <button onClick={handleDownloadAll} className="btn-download-all">
-                ⬇ Baixar Todos os Arquivos ({filesList.length})
+                ⬇ Baixar Arquivos Listados ({filteredFiles.length})
               </button>
-            ) : (
+            ) : filteredFiles.length === 1 ? (
               <a
-                href={filesList[0].downloadUrl}
+                href={filteredFiles[0].downloadUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-download-all"
               >
                 ⬇ Baixar Arquivo Único
               </a>
+            ) : (
+              <button disabled className="btn-download-all disabled">
+                Nenhum arquivo para baixar
+              </button>
             )}
           </div>
         </div>

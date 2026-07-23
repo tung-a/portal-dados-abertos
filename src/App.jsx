@@ -197,6 +197,37 @@ export default function App() {
     });
   }, [datasetsList, searchTerm, selectedCategory, selectedFormat]);
 
+  // =========================================================================
+  // 🔗 DEEP LINKING: Abre o dataset automaticamente se a URL tiver ?id=123
+  // =========================================================================
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const datasetId = params.get("id");
+
+    if (datasetId && datasetsList.length > 0) {
+      const foundDataset = datasetsList.find(
+        (d) => String(d.id) === String(datasetId),
+      );
+      if (foundDataset) {
+        setSelectedDataset(foundDataset);
+      }
+    }
+  }, [datasetsList]);
+
+  // Função para abrir o modal e colocar o ?id= na URL
+  const handleOpenDatasetModal = (dataset) => {
+    setSelectedDataset(dataset);
+    const newUrl = `${window.location.pathname}?id=${dataset.id}`;
+    window.history.pushState({ path: newUrl }, "", newUrl);
+  };
+
+  // Função para fechar o modal e limpar a URL
+  const handleCloseDatasetModal = () => {
+    setSelectedDataset(null);
+    const newUrl = window.location.pathname;
+    window.history.pushState({ path: newUrl }, "", newUrl);
+  };
+
   // Calcula o total de páginas e recorta apenas os itens da página atual
   const totalPages = Math.ceil(filteredDatasets.length / itemsPerPage);
 
@@ -259,7 +290,8 @@ export default function App() {
                   <DatasetCard
                     key={dataset.id}
                     dataset={dataset}
-                    onSelect={(data) => setSelectedDataset(data)}
+                    onSelect={handleOpenDatasetModal}
+                    onClose={handleCloseDatasetModal}
                   />
                 ))}
               </div>
