@@ -24,7 +24,16 @@ export default function App() {
   const [selectedFormat, setSelectedFormat] = useState("");
 
   // Estados para controle de abertura dos modais
-  const [selectedDataset, setSelectedDataset] = useState(null);
+  const getInitialSelectedDatasetId = () => {
+    if (typeof window === "undefined") return null;
+
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id") || null;
+  };
+
+  const [selectedDatasetId, setSelectedDatasetId] = useState(
+    getInitialSelectedDatasetId,
+  );
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   // =========================================================================
@@ -198,34 +207,37 @@ export default function App() {
   }, [datasetsList, searchTerm, selectedCategory, selectedFormat]);
 
   // =========================================================================
-  // 🔗 DEEP LINKING: Abre o dataset automaticamente se a URL tiver ?id=123
+  // 🔗 1. RESOLUÇÃO DO DATASET ATUAL A PARTIR DO ID DA URL
+  // =========================================================================
+  const selectedDataset = useMemo(() => {
+    if (!selectedDatasetId) return null;
+
+    return (
+      datasetsList.find(
+        (dataset) => String(dataset.id) === String(selectedDatasetId),
+      ) || null
+    );
+  }, [datasetsList, selectedDatasetId]);
+
+  // =========================================================================
+  // 🧹 2. SINCRONIZAÇÃO AUTOMÁTICA DA URL (Evita que o link fique preso)
   // =========================================================================
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const datasetId = params.get("id");
-
-    if (datasetId && datasetsList.length > 0) {
-      const foundDataset = datasetsList.find(
-        (d) => String(d.id) === String(datasetId),
-      );
-      if (foundDataset) {
-        setSelectedDataset(foundDataset);
-      }
+    if (selectedDatasetId) {
+      const newUrl = `${window.location.pathname}?id=${selectedDatasetId}`;
+      window.history.replaceState(null, "", newUrl);
+    } else if (window.location.search) {
+      window.history.replaceState(null, "", window.location.pathname);
     }
-  }, [datasetsList]);
+  }, [selectedDatasetId]);
 
-  // Função para abrir o modal e colocar o ?id= na URL
+  // Funções para abrir e fechar o modal sem manipular a URL manualmente
   const handleOpenDatasetModal = (dataset) => {
-    setSelectedDataset(dataset);
-    const newUrl = `${window.location.pathname}?id=${dataset.id}`;
-    window.history.pushState({ path: newUrl }, "", newUrl);
+    setSelectedDatasetId(dataset.id);
   };
 
-  // Função para fechar o modal e limpar a URL
   const handleCloseDatasetModal = () => {
-    setSelectedDataset(null);
-    const newUrl = window.location.pathname;
-    window.history.pushState({ path: newUrl }, "", newUrl);
+    setSelectedDatasetId(null);
   };
 
   // Calcula o total de páginas e recorta apenas os itens da página atual
@@ -357,7 +369,7 @@ export default function App() {
       {/* 4. Modais */}
       <DatasetDetailModal
         dataset={selectedDataset}
-        onClose={() => setSelectedDataset(null)}
+        onClose={() => setSelectedDatasetId(null)}
       />
 
       <DatasetUploadModal

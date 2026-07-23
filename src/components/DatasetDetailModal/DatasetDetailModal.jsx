@@ -10,11 +10,17 @@ export default function DatasetDetailModal({ dataset, onClose }) {
   const [selectedFileFormat, setSelectedFileFormat] = useState("");
   const [isCopied, setIsCopied] = useState(false);
 
-  // Reseta os filtros internos sempre que um novo dataset for aberto
   useEffect(() => {
-    setFileSearchTerm("");
-    setSelectedFileFormat("");
-    setIsCopied(false);
+    if (!dataset) return;
+
+    const resetInternalState = () => {
+      setFileSearchTerm("");
+      setSelectedFileFormat("");
+      setIsCopied(false);
+    };
+
+    const timeoutId = window.setTimeout(resetInternalState, 0);
+    return () => window.clearTimeout(timeoutId);
   }, [dataset]);
 
   // =========================================================================
