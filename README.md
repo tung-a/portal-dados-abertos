@@ -42,8 +42,6 @@ src/
 │   ├── DatasetCard/          # Card do catálogo com badge de licença
 │   ├── DatasetDetailModal/   # Modal de detalhe (bottom sheet no mobile)
 │   └── DatasetUploadModal/   # Modal de publicação de novo dataset
-├── data/
-│   └── mockDatasets.js       # Datasets locais de fallback
 ├── assets/
 │   └── logos/
 └── App.jsx                   # Lógica central, filtros, paginação, integração Zenodo

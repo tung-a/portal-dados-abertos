@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { datasets as initialDatasets } from "./data/mockDatasets";
 import Header from "./components/Header/Header";
 import SidebarFilters from "./components/SidebarFilters/SidebarFilters";
 import DatasetCard from "./components/DatasetCard/DatasetCard";
@@ -33,7 +32,7 @@ const parseZenodoNotes = (notes = "") => {
 };
 
 export default function App() {
-  const [datasetsList, setDatasetsList] = useState(initialDatasets);
+  const [datasetsList, setDatasetsList] = useState([]);
   const [isLoadingZenodo, setIsLoadingZenodo] = useState(false);
 
   // Estados de filtro e busca
