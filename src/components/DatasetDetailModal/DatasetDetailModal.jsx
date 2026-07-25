@@ -40,6 +40,24 @@ export default function DatasetDetailModal({ dataset, onClose }) {
     setIsCopied(false);
   }, [dataset]);
 
+  // Trava o scroll do body quando o modal está aberto (corrige iOS Safari)
+  useEffect(() => {
+    if (!dataset) return;
+    const scrollY = window.scrollY;
+    const body = document.body;
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+    return () => {
+      body.style.overflow = "";
+      body.style.position = "";
+      body.style.top = "";
+      body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, [dataset]);
+
   // Fecha o modal com Escape e foca no dialog ao abrir
   useEffect(() => {
     if (!dataset) return;
