@@ -19,18 +19,60 @@
   animation: fadeIn 0.2s ease-out; /* definida em index.css */
 }
 
-/* Mobile: ancora o overlay ao topo para evitar que a barra do browser corte o cabeçalho */
+/* ==========================================================================
+   MOBILE — Bottom sheet (ancora na base, sobe deslizando)
+   ========================================================================== */
 @media (max-width: 640px) {
   .modal-overlay {
-    align-items: flex-start !important;
-    padding: 0.75rem 0.5rem 0.5rem !important;
-    padding-top: max(0.75rem, env(safe-area-inset-top)) !important;
+    padding: 0 !important;
+    align-items: flex-end !important;
   }
 
   .modal-dialog {
-    max-height: calc(100dvh - 1.25rem) !important;
-    border-radius: 0.75rem !important;
+    border-radius: 1.25rem 1.25rem 0 0 !important;
+    max-height: 94dvh !important;
+    height: 94dvh !important;
+    animation: slideUpSheet 0.3s cubic-bezier(0.32, 0.72, 0, 1) !important;
   }
+
+  /* Indicador visual de arrasto (drag handle) */
+  .modal-dialog::before {
+    content: '';
+    display: block;
+    width: 2.5rem;
+    height: 0.22rem;
+    background: #cbd5e1;
+    border-radius: 9999px;
+    margin: 0.65rem auto 0;
+    flex-shrink: 0;
+  }
+
+  .modal-header {
+    padding-top: 0.75rem;
+    padding-bottom: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.2rem;
+  }
+
+  .btn-share-link {
+    font-size: 0.72rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .file-name {
+    max-width: calc(100vw - 10rem);
+  }
+
+  .modal-footer {
+    padding: 1rem;
+  }
+}
+
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
 
 /* ==========================================================================
