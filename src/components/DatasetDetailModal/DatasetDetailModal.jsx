@@ -169,7 +169,11 @@ export default function DatasetDetailModal({ dataset, onClose }) {
   };
 
   const hasDwbpFields =
-    license || meta.periodicidade || meta.contato || meta.proveniencia || meta.qualidade;
+    license ||
+    meta.periodicidade ||
+    meta.contato ||
+    meta.proveniencia ||
+    meta.qualidade;
 
   return createPortal(
     <div
@@ -196,7 +200,10 @@ export default function DatasetDetailModal({ dataset, onClose }) {
             <p className="modal-source-text">
               Fonte: {dataset.source || "Não informada"}
               {dataset.lastUpdated && (
-                <span className="modal-date-text"> · Atualizado em {dataset.lastUpdated}</span>
+                <span className="modal-date-text">
+                  {" "}
+                  · Atualizado em {dataset.lastUpdated}
+                </span>
               )}
             </p>
           </div>
@@ -390,89 +397,82 @@ export default function DatasetDetailModal({ dataset, onClose }) {
               </div>
             </div>
 
-            {/* REUTILIZAÇÃO E PROVENIÊNCIA — W3C DWBP BP4, BP5, BP6, BP23, BP29 */}
-            {hasDwbpFields && (
-              <div className="dwbp-section">
-                <h4 className="dwbp-section-title">
-                  Reutilização e Proveniência
-                  <span className="dwbp-badge">W3C DWBP</span>
-                </h4>
-
-                <div className="dwbp-grid">
-                  {/* BP4 — Licença */}
-                  {license && (
-                    <div className="metadata-item">
-                      <span className="metadata-label">Licença de Uso (BP4)</span>
-                      {license.url ? (
-                        <a
-                          href={license.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="license-badge"
-                          title={license.title}
-                        >
-                          {license.label}
-                        </a>
-                      ) : (
-                        <span className="license-badge license-badge--plain">
-                          {license.label}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* BP29 — Frequência de atualização */}
-                  {meta.periodicidade && (
-                    <div className="metadata-item">
-                      <span className="metadata-label">Atualização (BP29)</span>
-                      <span className="metadata-value">{meta.periodicidade}</span>
-                    </div>
-                  )}
-
-                  {/* BP23 — Contato responsável */}
-                  {meta.contato && (
-                    <div className="metadata-item">
-                      <span className="metadata-label">Contato (BP23)</span>
-                      {meta.contato.includes("@") ? (
-                        <a
-                          href={`mailto:${meta.contato}`}
-                          className="metadata-value metadata-contact-link"
-                        >
-                          {meta.contato}
-                        </a>
-                      ) : (
-                        <span className="metadata-value">{meta.contato}</span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* BP5 — Proveniência */}
-                  {meta.proveniencia && (
-                    <div className="metadata-item metadata-item--full">
-                      <span className="metadata-label">
-                        Proveniência e Metodologia (BP5)
-                      </span>
-                      <span className="metadata-value dwbp-text">
-                        {meta.proveniencia}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* BP6 — Qualidade */}
-                  {meta.qualidade && (
-                    <div className="metadata-item metadata-item--full">
-                      <span className="metadata-label">
-                        Qualidade e Limitações Conhecidas (BP6)
-                      </span>
-                      <span className="metadata-value dwbp-text">
-                        {meta.qualidade}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* REUTILIZAÇÃO E PROVENIÊNCIA — bloco independente (W3C DWBP BP4, BP5, BP6, BP23, BP29) */}
+          {hasDwbpFields && (
+            <div className="dwbp-box">
+              <div className="dwbp-box-header">
+                <h3 className="dwbp-box-title">Reutilização e Proveniência</h3>
+                <span className="dwbp-badge">W3C DWBP</span>
+              </div>
+
+              <div className="dwbp-grid">
+                {/* BP4 — Licença */}
+                {license && (
+                  <div className="metadata-item">
+                    <span className="metadata-label">Licença de Uso</span>
+                    {license.url ? (
+                      <a
+                        href={license.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="license-badge"
+                        title={license.title}
+                      >
+                        {license.label}
+                      </a>
+                    ) : (
+                      <span className="license-badge license-badge--plain">
+                        {license.label}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* BP29 — Frequência de atualização */}
+                {meta.periodicidade && (
+                  <div className="metadata-item">
+                    <span className="metadata-label">Atualização</span>
+                    <span className="metadata-value">{meta.periodicidade}</span>
+                  </div>
+                )}
+
+                {/* BP23 — Contato responsável */}
+                {meta.contato && (
+                  <div className="metadata-item">
+                    <span className="metadata-label">Contato</span>
+                    {meta.contato.includes("@") ? (
+                      <a
+                        href={`mailto:${meta.contato}`}
+                        className="metadata-value metadata-contact-link"
+                      >
+                        {meta.contato}
+                      </a>
+                    ) : (
+                      <span className="metadata-value">{meta.contato}</span>
+                    )}
+                  </div>
+                )}
+
+                {/* BP5 — Proveniência */}
+                {meta.proveniencia && (
+                  <div className="metadata-item metadata-item--full">
+                    <span className="metadata-label">Proveniência e Metodologia</span>
+                    <span className="metadata-value dwbp-text">{meta.proveniencia}</span>
+                  </div>
+                )}
+
+                {/* BP6 — Qualidade */}
+                {meta.qualidade && (
+                  <div className="metadata-item metadata-item--full">
+                    <span className="metadata-label">Qualidade e Limitações Conhecidas</span>
+                    <span className="metadata-value dwbp-text">{meta.qualidade}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Visualização Preliminar (Tabela de Amostra) */}
           {hasValidPreview && (

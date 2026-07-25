@@ -21,7 +21,7 @@ export default function DatasetCard({ dataset, onSelect }) {
 
   return (
     <div className="dataset-card">
-      {/* Cabeçalho do Card: Categorias e Data */}
+      {/* Cabeçalho do Card: Categorias, Licença e Data */}
       <div className="card-header">
         <div className="card-tags-container">
           {categoriesList.map((cat, index) => (
@@ -30,9 +30,16 @@ export default function DatasetCard({ dataset, onSelect }) {
             </span>
           ))}
         </div>
-        {dataset.lastUpdated && (
-          <span className="card-date">Atualizado: {dataset.lastUpdated}</span>
-        )}
+        <div className="card-meta-right">
+          {licenseLabel && (
+            <span className="card-license-badge" title="Licença de reutilização">
+              {licenseLabel}
+            </span>
+          )}
+          {dataset.lastUpdated && (
+            <span className="card-date">Atualizado: {dataset.lastUpdated}</span>
+          )}
+        </div>
       </div>
 
       {/* Corpo do Card: Título e Descrição */}
@@ -44,22 +51,15 @@ export default function DatasetCard({ dataset, onSelect }) {
         </p>
       </div>
 
-      {/* Rodapé do Card: Formatos, Licença e Botão de Ação */}
+      {/* Rodapé do Card: Formatos e Botão de Ação */}
       <div className="card-footer">
-        <div className="card-footer-left">
-          <div className="card-formats">
-            {Array.isArray(dataset.formats) &&
-              dataset.formats.map((fmt) => (
-                <span key={fmt} className="format-badge">
-                  {fmt}
-                </span>
-              ))}
-          </div>
-          {licenseLabel && (
-            <span className="card-license-badge" title="Licença de reutilização (BP4)">
-              {licenseLabel}
-            </span>
-          )}
+        <div className="card-formats">
+          {Array.isArray(dataset.formats) &&
+            dataset.formats.map((fmt) => (
+              <span key={fmt} className="format-badge">
+                {fmt}
+              </span>
+            ))}
         </div>
 
         <button onClick={() => onSelect(dataset)} className="btn-explore">
