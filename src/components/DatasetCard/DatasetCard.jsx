@@ -1,5 +1,11 @@
 import "./DatasetCard.css";
 
+const LICENSE_SHORT = {
+  "cc-by-4.0": "CC BY 4.0",
+  "cc-zero": "CC0 1.0",
+  "odbl-1.0": "ODbL 1.0",
+};
+
 export default function DatasetCard({ dataset, onSelect }) {
   if (!dataset) return null;
 
@@ -8,6 +14,10 @@ export default function DatasetCard({ dataset, onSelect }) {
     Array.isArray(dataset.categories) && dataset.categories.length > 0
       ? dataset.categories
       : [dataset.category || "Geral"];
+
+  const licenseLabel = dataset.metadata?.licenca
+    ? LICENSE_SHORT[dataset.metadata.licenca] || dataset.metadata.licenca
+    : null;
 
   return (
     <div className="dataset-card">
@@ -34,15 +44,22 @@ export default function DatasetCard({ dataset, onSelect }) {
         </p>
       </div>
 
-      {/* Rodapé do Card: Formatos e Botão de Ação */}
+      {/* Rodapé do Card: Formatos, Licença e Botão de Ação */}
       <div className="card-footer">
-        <div className="card-formats">
-          {Array.isArray(dataset.formats) &&
-            dataset.formats.map((fmt) => (
-              <span key={fmt} className="format-badge">
-                {fmt}
-              </span>
-            ))}
+        <div className="card-footer-left">
+          <div className="card-formats">
+            {Array.isArray(dataset.formats) &&
+              dataset.formats.map((fmt) => (
+                <span key={fmt} className="format-badge">
+                  {fmt}
+                </span>
+              ))}
+          </div>
+          {licenseLabel && (
+            <span className="card-license-badge" title="Licença de reutilização (BP4)">
+              {licenseLabel}
+            </span>
+          )}
         </div>
 
         <button onClick={() => onSelect(dataset)} className="btn-explore">

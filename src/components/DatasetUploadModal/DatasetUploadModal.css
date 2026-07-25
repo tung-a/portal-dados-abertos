@@ -15,16 +15,7 @@
   justify-content: center !important;
   padding: 1rem;
   margin: 0 !important;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  animation: fadeIn 0.2s ease-out; /* definida em index.css */
 }
 
 /* ==========================================================================
@@ -33,7 +24,7 @@
 .upload-modal-dialog {
   background-color: #ffffff;
   border-radius: 0.75rem;
-  max-width: 52rem; /* 832px (Aumentado ligeiramente para acomodar os novos campos) */
+  max-width: 52rem;
   width: 100%;
   max-height: 90vh;
   display: flex;
@@ -41,18 +32,7 @@
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   position: relative;
-  animation: scaleUp 0.2s ease-out;
-}
-
-@keyframes scaleUp {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  animation: scaleUp 0.2s ease-out; /* definida em index.css */
 }
 
 /* ==========================================================================
@@ -525,4 +505,47 @@
 .form-disabled {
   opacity: 0.6;
   pointer-events: none;
+}
+
+/* ==========================================================================
+   NOTIFICAÇÕES INLINE (substitui alert())
+   ========================================================================== */
+.upload-notification {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.upload-notification--error {
+  background-color: #fef2f2;
+  border-bottom: 2px solid #fca5a5;
+  color: #991b1b;
+}
+
+.upload-notification--success {
+  background-color: #ecfdf5;
+  border-bottom: 2px solid #6ee7b7;
+  color: #065f46;
+}
+
+.notification-close {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.notification-close:hover {
+  opacity: 1;
 }

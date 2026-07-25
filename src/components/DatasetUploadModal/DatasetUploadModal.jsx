@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import "./DatasetUploadModal.css";
 
@@ -12,6 +12,8 @@ const QUICK_SUGGESTIONS = [
   "Dados Abertos",
 ];
 
+const INITIAL_KEYWORDS = ["Dados Abertos", "Justiça Climática", "São Vicente"];
+
 export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
   // =========================================================================
   // 1. DECLARAÇÃO DE TODOS OS HOOKS NO TOPO (SEM CONDICIONAIS ANTES)
@@ -20,17 +22,14 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
   // Estados de Carregamento para o Upload Real
   const [isUploading, setIsUploading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [notification, setNotification] = useState(null); // { type: 'error'|'success', message }
 
   // Camada 1: Identificação & Descrição (W3C BP 2)
   const [title, setTitle] = useState("");
   const [source, setSource] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [description, setDescription] = useState("");
-  const [keywords, setKeywords] = useState([
-    "Dados Abertos",
-    "Justiça Climática",
-    "São Vicente",
-  ]);
+  const [keywords, setKeywords] = useState(INITIAL_KEYWORDS);
   const [currentKeyword, setCurrentKeyword] = useState("");
 
   // Camada 2: Licenciamento & Temporalidade (W3C BP 13 & BP 2)
@@ -46,10 +45,30 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
   // Camada 4: Distribuições Físicas (Múltiplos Arquivos)
   const [files, setFiles] = useState([]);
 
+  const dialogRef = useRef(null);
+
   // =========================================================================
   // 2. VERIFICAÇÃO DE ABERTURA APÓS CARREGAR OS HOOKS NA MEMÓRIA
   // =========================================================================
+
+  // Fecha com Escape e foca ao abrir
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && !isUploading) onClose();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    dialogRef.current?.focus();
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isUploading, onClose]);
+
   if (!isOpen) return null;
+
+  const showError = (message) =>
+    setNotification({ type: "error", message });
 
   // Lógica para seleção de múltiplos arquivos
   const handleFileSelect = (e) => {
@@ -58,39 +77,53 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
       const newUniqueFiles = selectedFiles.filter(
         (newFile) => !files.some((existing) => existing.name === newFile.name),
       );
-      setFiles([...files, ...newUniqueFiles]);
+      setFiles((prev) => [...prev, ...newUniqueFiles]);
     }
   };
 
   const handleRemoveFile = (fileNameToRemove) => {
-    setFiles(files.filter((f) => f.name !== fileNameToRemove));
+    setFiles((prev) => prev.filter((f) => f.name !== fileNameToRemove));
   };
 
   // Lógica para palavras-chave (Tags)
-  const handleAddKeyword = (e) => {
-    e && e.preventDefault();
+  const handleAddKeyword = () => {
     const trimmed = currentKeyword.trim();
     if (trimmed && !keywords.includes(trimmed)) {
-      setKeywords([...keywords, trimmed]);
+      setKeywords((prev) => [...prev, trimmed]);
       setCurrentKeyword("");
+    }
+  };
+
+  const handleKeywordInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddKeyword();
     }
   };
 
   const handleAddSuggestion = (suggestion) => {
     if (!keywords.includes(suggestion)) {
-      setKeywords([...keywords, suggestion]);
+      setKeywords((prev) => [...prev, suggestion]);
     }
   };
 
   const handleRemoveKeyword = (tagToRemove) => {
-    setKeywords(keywords.filter((tag) => tag !== tagToRemove));
+    setKeywords((prev) => prev.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddKeyword();
-    }
+  const resetForm = () => {
+    setTitle("");
+    setSource("");
+    setContactEmail("");
+    setDescription("");
+    setKeywords(INITIAL_KEYWORDS);
+    setCurrentKeyword("");
+    setLicense("cc-by-4.0");
+    setUpdateFrequency("Estático / Histórico");
+    setProvenance("");
+    setDataQuality("");
+    setFiles([]);
+    setNotification(null);
   };
 
   // =========================================================================
@@ -98,26 +131,26 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
   // =========================================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setNotification(null);
 
     if (!title || !source || keywords.length === 0) {
-      alert(
-        "Por favor, preencha o Título, a Fonte/Organização e adicione pelo menos uma Palavra-chave.",
+      showError(
+        "Preencha o Título, a Fonte/Organização e adicione pelo menos uma Palavra-chave.",
       );
       return;
     }
 
     if (files.length === 0) {
-      alert(
+      showError(
         "Para um upload real, você precisa anexar pelo menos 1 arquivo físico.",
       );
       return;
     }
 
-    // Busca o Token no arquivo .env do Vite
     const token = import.meta.env.VITE_ZENODO_TOKEN;
     if (!token) {
-      alert(
-        "Erro de Configuração: O token do Zenodo não foi encontrado na variável VITE_ZENODO_TOKEN do seu arquivo .env.",
+      showError(
+        "Erro de Configuração: o token VITE_ZENODO_TOKEN não foi encontrado no arquivo .env.",
       );
       return;
     }
@@ -238,22 +271,21 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
         );
       }
 
-      // Agora pegamos a resposta da PUBLICAÇÃO FINAL (que contém os links públicos reais!)
       const finalDeposition = await publishRes.json();
 
       const realDistributions = uploadedFilesList.map((f, idx) => {
         const fileName =
           f.filename || f.key || files[idx]?.name || "arquivo.zip";
         const fileSizeBytes = f.filesize || f.size || files[idx]?.size || 0;
-        const sizeKB = (fileSizeBytes / 1024).toFixed(2);
-        const ext = fileName.split(".").pop().toUpperCase();
+        const sizeKB = fileSizeBytes / 1024;
 
         return {
           name: fileName,
-          format: ext,
+          format: fileName.split(".").pop().toUpperCase(),
           size:
-            sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(2)} MB` : `${sizeKB} KB`,
-          // Usamos a URL pública gerada no registro final do CERN:
+            sizeKB >= 1024
+              ? `${(sizeKB / 1024).toFixed(2)} MB`
+              : `${sizeKB.toFixed(2)} KB`,
           downloadUrl: `https://sandbox.zenodo.org/records/${finalDeposition.id}/files/${encodeURIComponent(fileName)}?download=1`,
           checksum: f.checksum || "MD5 Verificado via API CERN",
         };
@@ -265,14 +297,14 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
         return acc + bytes / 1024;
       }, 0);
       const totalSizeFormatted =
-        totalSizeKB > 1024
+        totalSizeKB >= 1024
           ? `${(totalSizeKB / 1024).toFixed(2)} MB`
           : `${totalSizeKB.toFixed(2)} KB`;
-      const realDoi =
-        finalDeposition.metadata.preregister_doi?.doi ||
-        `10.5281/zenodo.${depId}`;
 
-      // Monta o card real para o estado local do React
+      // O DOI real fica em finalDeposition.doi após publicação
+      const realDoi =
+        finalDeposition.doi || `10.5281/zenodo.${depId}`;
+
       const newDataset = {
         id: finalDeposition.id,
         title: finalDeposition.metadata.title,
@@ -313,27 +345,14 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
       };
 
       onAddDataset(newDataset);
-      alert(
-        "🎉 Upload Concluído! O arquivo já está hospedado e disponível para download.",
-      );
-
-      // Limpa os estados ao fechar
-      setTitle("");
-      setSource("");
-      setContactEmail("");
-      setDescription("");
-      setKeywords(["Meio Ambiente & Risco", "São Vicente"]);
-      setLicense("cc-by-4.0");
-      setUpdateFrequency("Estático / Histórico");
-      setProvenance("");
-      setDataQuality("");
-      setFiles([]);
+      resetForm();
       onClose();
     } catch (error) {
       console.error("Erro fatal no upload:", error);
-      alert(
-        `❌ Erro no envio: ${error.message}\n\nAbra o Console (F12) para ver os detalhes da requisição.`,
-      );
+      setNotification({
+        type: "error",
+        message: `Erro no envio: ${error.message}. Abra o Console (F12) para detalhes.`,
+      });
     } finally {
       setIsUploading(false);
       setStatusMessage("");
@@ -341,15 +360,27 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
   };
 
   return createPortal(
-    <div className="upload-modal-overlay">
-      <div className="upload-modal-dialog">
+    <div
+      className="upload-modal-overlay"
+      onClick={(e) => e.target === e.currentTarget && !isUploading && onClose()}
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="upload-modal-title"
+    >
+      <div
+        className="upload-modal-dialog"
+        ref={dialogRef}
+        tabIndex={-1}
+      >
         {/* Cabeçalho */}
         <div className="upload-header">
           <div>
             <span className="upload-subtitle">
               W3C DWBP & Integração Zenodo CERN
             </span>
-            <h2 className="upload-title">Publicar no Catálogo de Dados</h2>
+            <h2 id="upload-modal-title" className="upload-title">
+              Publicar no Catálogo de Dados
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -369,6 +400,21 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
               <strong>Sincronizando com a nuvem do Zenodo...</strong>
               <span>{statusMessage}</span>
             </div>
+          </div>
+        )}
+
+        {/* NOTIFICAÇÃO DE ERRO OU SUCESSO */}
+        {notification && (
+          <div className={`upload-notification upload-notification--${notification.type}`}>
+            {notification.type === "error" ? "⚠️" : "✅"} {notification.message}
+            <button
+              type="button"
+              onClick={() => setNotification(null)}
+              className="notification-close"
+              aria-label="Fechar notificação"
+            >
+              ✕
+            </button>
           </div>
         )}
 
@@ -430,7 +476,7 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
                   type="text"
                   value={currentKeyword}
                   onChange={(e) => setCurrentKeyword(e.target.value)}
-                  onKeyDown={handleKeyDown}
+                  onKeyDown={handleKeywordInputKeyDown}
                   disabled={isUploading}
                   placeholder="Digite e pressione Enter..."
                   className="form-input"
@@ -477,6 +523,7 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
                       disabled={isUploading}
                       className="btn-remove-keyword"
                       title="Remover"
+                      aria-label={`Remover palavra-chave ${tag}`}
                     >
                       ✕
                     </button>
@@ -603,6 +650,7 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
                   onChange={handleFileSelect}
                   disabled={isUploading}
                   className="file-input"
+                  aria-label="Selecionar arquivos para upload"
                 />
                 <span className="file-instruction">
                   📁 Clique ou arraste os arquivos reais do seu computador
@@ -616,11 +664,11 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
                     Arquivos prontos para envio ({files.length}):
                   </span>
                   {files.map((f, idx) => {
-                    const sizeFormatted = ((f.size || 0) / 1024).toFixed(2);
+                    const sizeKB = (f.size || 0) / 1024;
                     const displaySize =
-                      sizeFormatted > 1024
-                        ? `${(sizeFormatted / 1024).toFixed(2)} MB`
-                        : `${sizeFormatted} KB`;
+                      sizeKB >= 1024
+                        ? `${(sizeKB / 1024).toFixed(2)} MB`
+                        : `${sizeKB.toFixed(2)} KB`;
 
                     return (
                       <div key={idx} className="file-preview-item">
@@ -639,6 +687,7 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
                           disabled={isUploading}
                           className="btn-remove-file"
                           title="Remover arquivo"
+                          aria-label={`Remover arquivo ${f.name}`}
                         >
                           ✕
                         </button>

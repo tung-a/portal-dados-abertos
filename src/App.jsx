@@ -14,6 +14,24 @@ const cleanZenodoText = (htmlString) => {
   return doc.body.textContent || "";
 };
 
+// Extrai campos W3C do campo notes do Zenodo (gravados no formato [W3C DWBP] ...)
+const parseZenodoNotes = (notes = "") => {
+  const extract = (label, nextLabel) => {
+    const start = notes.indexOf(`${label}: `);
+    if (start === -1) return null;
+    const valueStart = start + label.length + 2;
+    const end = nextLabel ? notes.indexOf(`. ${nextLabel}:`, valueStart) : notes.length;
+    const value = notes.slice(valueStart, end !== -1 ? end : notes.length).replace(/\.$/, "").trim();
+    return value && value !== "N/A" && value !== "Não declarada" && value !== "Coleta primária" ? value : null;
+  };
+  return {
+    proveniencia: extract("Proveniência", "Qualidade"),
+    qualidade: extract("Qualidade", "Contato"),
+    contato: extract("Contato", "Frequência"),
+    periodicidade: extract("Frequência", null),
+  };
+};
+
 export default function App() {
   const [datasetsList, setDatasetsList] = useState(initialDatasets);
   const [isLoadingZenodo, setIsLoadingZenodo] = useState(false);
@@ -40,9 +58,12 @@ export default function App() {
   // 📄 CONTROLE DE PAGINAÇÃO (Evita rolagem infinita)
   // =========================================================================
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // ⬅️ Define 6 cards por página (fica perfeito em grids 2x3 ou 3x2)
+  const itemsPerPage = 5; // Define 5 cards por página
 
-  // Sempre que o usuário buscar algo ou mudar um filtro, volta automaticamente para a Página 1
+  // Volta para a página 1 sempre que o usuário buscar algo ou mudar um filtro
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, selectedFormat]);
 
   // =========================================================================
   // 🔄 BUSCA AUTOMÁTICA DOS SEUS UPLOADS NO ZENODO SANDBOX VIA API
@@ -60,7 +81,7 @@ export default function App() {
 
       setIsLoadingZenodo(true);
       try {
-        // Consulta a API de depósitos do Zenodo Sandbox usando o seu token pessoal
+        // Consulta a API de depósitos do Zenodo Sandbox usando o token pessoal
         const response = await fetch(
           `https://sandbox.zenodo.org/api/deposit/depositions?access_token=${ZENODO_TOKEN}`,
         );
@@ -79,13 +100,14 @@ export default function App() {
           const allFiles = Array.isArray(dep.files)
             ? dep.files.map((f) => {
                 const fName = f.filename || f.key || "arquivo.zip";
-                const fSizeKB = ((f.filesize || f.size || 0) / 1024).toFixed(2);
+                const fSizeBytes = f.filesize || f.size || 0;
+                const fSizeKB = fSizeBytes / 1024;
                 return {
                   name: fName,
                   size:
-                    fSizeKB > 1024
+                    fSizeKB >= 1024
                       ? `${(fSizeKB / 1024).toFixed(2)} MB`
-                      : `${fSizeKB} KB`,
+                      : `${fSizeKB.toFixed(2)} KB`,
                   downloadUrl: `https://sandbox.zenodo.org/records/${recordId}/files/${encodeURIComponent(fName)}?download=1`,
                   checksum: f.checksum || "MD5 Verificado",
                 };
@@ -106,10 +128,23 @@ export default function App() {
               ? dep.metadata.keywords
               : ["Meio Ambiente & Risco", "Dados Abertos"];
 
+          // 4. TAMANHO TOTAL CALCULADO EM BYTES (evita somar KB com MB)
+          const totalBytes = Array.isArray(dep.files)
+            ? dep.files.reduce((acc, f) => acc + (f.filesize || f.size || 0), 0)
+            : 0;
+          const totalKB = totalBytes / 1024;
+          const tamanhoFormatted =
+            totalKB >= 1024
+              ? `${(totalKB / 1024).toFixed(2)} MB`
+              : `${totalKB.toFixed(2)} KB`;
+
+          // 5. EXTRAI CAMPOS W3C DWBP DO CAMPO NOTES DO ZENODO
+          const parsedNotes = parseZenodoNotes(dep.metadata?.notes);
+
           return {
             id: dep.id,
             title: dep.title || dep.metadata?.title || "Dataset sem título",
-            categories: allCategories, // ⬅️ Agora é um Array com múltiplas categorias!
+            categories: allCategories,
             formats: allFormats.length > 0 ? allFormats : ["ZIP"],
             lastUpdated: new Date(
               dep.modified || dep.created,
@@ -118,17 +153,19 @@ export default function App() {
               dep.metadata?.creators?.[0]?.name ||
               "Observatório de Justiça Climática",
             description: cleanZenodoText(dep.metadata?.description),
-            files: allFiles, // ⬅️ Array com a lista completa de arquivos!
+            files: allFiles,
             metadata: {
-              tamanho:
-                allFiles
-                  .reduce((acc, curr) => acc + parseFloat(curr.size), 0)
-                  .toFixed(2) + " KB/MB",
+              tamanho: tamanhoFormatted,
               acesso:
                 dep.metadata?.access_right === "open"
                   ? "Acesso Aberto"
                   : "Público",
               doi: dep.doi || `10.5281/zenodo.${dep.id}`,
+              licenca: dep.metadata?.license || null,
+              periodicidade: parsedNotes.periodicidade || null,
+              proveniencia: parsedNotes.proveniencia || null,
+              qualidade: parsedNotes.qualidade || null,
+              contato: parsedNotes.contato || null,
             },
             preview: [],
           };
@@ -167,7 +204,7 @@ export default function App() {
     return [...new Set(allCats)];
   }, [datasetsList]);
 
-  // 2. Extração dinâmica de FORMATOS únicos (⬅️ É ESTE BLOCO QUE RESOLVE O SEU ERRO!)
+  // 2. Extração dinâmica de FORMATOS únicos
   const formats = useMemo(() => {
     const allFormats = datasetsList.flatMap((d) => {
       if (Array.isArray(d.formats)) return d.formats;
@@ -294,7 +331,7 @@ export default function App() {
             </button>
           </div>
 
-          {/* Grid de Cards (Agora renderiza APENAS os itens da página atual) */}
+          {/* Grid de Cards (renderiza APENAS os itens da página atual) */}
           {filteredDatasets.length > 0 ? (
             <>
               <div className="datasets-grid">
@@ -303,7 +340,6 @@ export default function App() {
                     key={dataset.id}
                     dataset={dataset}
                     onSelect={handleOpenDatasetModal}
-                    onClose={handleCloseDatasetModal}
                   />
                 ))}
               </div>
@@ -314,7 +350,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       setCurrentPage((prev) => Math.max(prev - 1, 1));
-                      window.scrollTo({ top: 400, behavior: "smooth" }); // Sobe suavemente ao topo do catálogo
+                      window.scrollTo({ top: 400, behavior: "smooth" });
                     }}
                     disabled={currentPage === 1}
                     className="btn-pagination"
@@ -369,14 +405,14 @@ export default function App() {
       {/* 4. Modais */}
       <DatasetDetailModal
         dataset={selectedDataset}
-        onClose={() => setSelectedDatasetId(null)}
+        onClose={handleCloseDatasetModal}
       />
 
       <DatasetUploadModal
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onAddDataset={(newDataset) => {
-          setDatasetsList([newDataset, ...datasetsList]);
+          setDatasetsList((prev) => [newDataset, ...prev]);
         }}
       />
     </div>

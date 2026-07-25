@@ -15,16 +15,7 @@
   justify-content: center !important;
   padding: 1rem;
   margin: 0 !important;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  animation: fadeIn 0.2s ease-out; /* definida em index.css */
 }
 
 /* ==========================================================================
@@ -41,35 +32,13 @@
   box-shadow: 0 25px 50px -12px rgba(26, 60, 44, 0.2);
   overflow: hidden;
   position: relative;
-  animation: scaleUp 0.2s ease-out;
+  animation: scaleUp 0.2s ease-out; /* definida em index.css */
   border: 1px solid rgba(135, 74, 51, 0.14);
 }
 
-@keyframes scaleUp {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 /* ==========================================================================
-   CABEÇALHO & CATEGORIAS
+   CABEÇALHO & CATEGORIAS (único bloco — o primeiro foi removido)
    ========================================================================== */
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 1.5rem;
-  border-bottom: 1px solid rgba(135, 74, 51, 0.14);
-  background-color: rgba(255, 255, 255, 0.92);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
 
 .modal-tags-container {
   display: flex;
@@ -683,4 +652,124 @@
   border-color: #0082b3;
   color: #ffffff;
   box-shadow: 0 2px 4px rgba(0, 163, 224, 0.25);
+}
+
+/* ==========================================================================
+   DATA E DOI — CABEÇALHO DO MODAL
+   ========================================================================== */
+.modal-date-text {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/* DOI clicável (BP7 — identificador persistente) */
+.metadata-doi-link {
+  color: var(--coop-azul);
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+  display: block;
+}
+
+.metadata-doi-link:hover {
+  color: #0082b3;
+  border-bottom-style: solid;
+}
+
+/* Link de contato */
+.metadata-contact-link {
+  color: var(--coop-verde);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.metadata-contact-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   BADGE DE LICENÇA (BP4 — licença visível e linkável)
+   ========================================================================== */
+.license-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background-color: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: var(--coop-verde);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: background-color 0.15s ease;
+  width: fit-content;
+}
+
+.license-badge:hover {
+  background-color: #d1fae5;
+}
+
+.license-badge--plain {
+  cursor: default;
+}
+
+/* ==========================================================================
+   SEÇÃO W3C DWBP (BP4, BP5, BP6, BP23, BP29)
+   ========================================================================== */
+.dwbp-section {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.dwbp-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dwbp-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  letter-spacing: 0.04em;
+}
+
+.dwbp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .dwbp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Item que ocupa toda a largura (proveniência, qualidade) */
+.metadata-item--full {
+  grid-column: 1 / -1;
+}
+
+/* Texto longo de proveniência/qualidade */
+.dwbp-text {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #475569;
+  line-height: 1.6;
+  white-space: pre-wrap;
 }

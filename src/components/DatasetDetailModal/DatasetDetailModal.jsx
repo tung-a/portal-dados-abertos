@@ -1,6 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import "./DatasetDetailModal.css";
+
+const LICENSE_INFO = {
+  "cc-by-4.0": {
+    label: "CC BY 4.0",
+    url: "https://creativecommons.org/licenses/by/4.0/deed.pt",
+    title: "Creative Commons Atribuição 4.0",
+  },
+  "cc-zero": {
+    label: "CC0 1.0",
+    url: "https://creativecommons.org/publicdomain/zero/1.0/deed.pt",
+    title: "Domínio Público Universal",
+  },
+  "odbl-1.0": {
+    label: "ODbL 1.0",
+    url: "https://opendatacommons.org/licenses/odbl/1-0/",
+    title: "Open Database License",
+  },
+};
+
+const getLicense = (key) =>
+  key ? LICENSE_INFO[key] || { label: key, url: null, title: key } : null;
 
 export default function DatasetDetailModal({ dataset, onClose }) {
   // =========================================================================
@@ -9,18 +30,57 @@ export default function DatasetDetailModal({ dataset, onClose }) {
   const [fileSearchTerm, setFileSearchTerm] = useState("");
   const [selectedFileFormat, setSelectedFileFormat] = useState("");
   const [isCopied, setIsCopied] = useState(false);
+  const dialogRef = useRef(null);
 
+  // Reset síncrono de estado interno quando o dataset muda
+  useEffect(() => {
+    if (!dataset) return;
+    setFileSearchTerm("");
+    setSelectedFileFormat("");
+    setIsCopied(false);
+  }, [dataset]);
+
+  // Fecha o modal com Escape e foca no dialog ao abrir
+  useEffect(() => {
+    if (!dataset) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    dialogRef.current?.focus();
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [dataset, onClose]);
+
+  // Injeta JSON-LD estruturado no <head> para SEO e rastreabilidade (BP14)
   useEffect(() => {
     if (!dataset) return;
 
-    const resetInternalState = () => {
-      setFileSearchTerm("");
-      setSelectedFileFormat("");
-      setIsCopied(false);
+    const meta = dataset.metadata || {};
+    const license = getLicense(meta.licenca);
+    const structuredData = {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      name: dataset.title,
+      description: dataset.description,
+      ...(meta.doi && { identifier: `https://doi.org/${meta.doi}` }),
+      ...(dataset.source && {
+        creator: { "@type": "Organization", name: dataset.source },
+      }),
+      ...(license?.url && { license: license.url }),
+      ...(dataset.lastUpdated && { dateModified: dataset.lastUpdated }),
+      keywords: Array.isArray(dataset.categories) ? dataset.categories : [],
     };
 
-    const timeoutId = window.setTimeout(resetInternalState, 0);
-    return () => window.clearTimeout(timeoutId);
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "dataset-jsonld";
+    script.text = JSON.stringify(structuredData);
+    document.head.appendChild(script);
+
+    return () => {
+      const existing = document.getElementById("dataset-jsonld");
+      if (existing) document.head.removeChild(existing);
+    };
   }, [dataset]);
 
   // =========================================================================
@@ -29,6 +89,7 @@ export default function DatasetDetailModal({ dataset, onClose }) {
   if (!dataset) return null;
 
   const meta = dataset.metadata || {};
+  const license = getLicense(meta.licenca);
   const isZenodoMeta =
     meta.tamanho !== undefined ||
     meta.doi !== undefined ||
@@ -60,12 +121,10 @@ export default function DatasetDetailModal({ dataset, onClose }) {
   // =========================================================================
   // 3. LÓGICA DE FILTRAGEM E PESQUISA INTERNA DE ARQUIVOS
   // =========================================================================
-  // Extrai todas as extensões únicas presentes nos arquivos deste card (ex: [CSV, SHP, ZIP])
   const availableFileFormats = [
     ...new Set(filesList.map((f) => f.name.split(".").pop().toUpperCase())),
   ];
 
-  // Filtra os arquivos com base na digitação e no botão de formato clicado
   const filteredFiles = filesList.filter((file) => {
     const matchesName = file.name
       .toLowerCase()
@@ -81,23 +140,46 @@ export default function DatasetDetailModal({ dataset, onClose }) {
   // 4. AÇÕES DO USUÁRIO (DOWNLOAD EM LOTE & COMPARTILHAMENTO)
   // =========================================================================
   const handleDownloadAll = () => {
-    filteredFiles.forEach((file, index) => {
-      setTimeout(() => {
-        window.open(file.downloadUrl, "_blank");
-      }, index * 400);
+    filteredFiles.forEach((file) => {
+      const a = document.createElement("a");
+      a.href = file.downloadUrl;
+      a.download = file.name;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     });
   };
 
-  const handleShareDirectLink = () => {
+  const handleShareDirectLink = async () => {
     const directUrl = `${window.location.origin}${window.location.pathname}?id=${dataset.id}`;
-    navigator.clipboard.writeText(directUrl);
+    try {
+      await navigator.clipboard.writeText(directUrl);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = directUrl;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
     setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 3000); // Volta ao texto original após 3 segundos
+    setTimeout(() => setIsCopied(false), 3000);
   };
 
+  const hasDwbpFields =
+    license || meta.periodicidade || meta.contato || meta.proveniencia || meta.qualidade;
+
   return createPortal(
-    <div className="modal-overlay">
-      <div className="modal-dialog">
+    <div
+      className="modal-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="modal-title"
+    >
+      <div className="modal-dialog" ref={dialogRef} tabIndex={-1}>
         {/* Cabeçalho com Categorias, Título e Botão de Compartilhar */}
         <div className="modal-header">
           <div className="header-info-col">
@@ -108,9 +190,14 @@ export default function DatasetDetailModal({ dataset, onClose }) {
                 </span>
               ))}
             </div>
-            <h2 className="modal-title">{dataset.title || "Sem título"}</h2>
+            <h2 id="modal-title" className="modal-title">
+              {dataset.title || "Sem título"}
+            </h2>
             <p className="modal-source-text">
               Fonte: {dataset.source || "Não informada"}
+              {dataset.lastUpdated && (
+                <span className="modal-date-text"> · Atualizado em {dataset.lastUpdated}</span>
+              )}
             </p>
           </div>
 
@@ -134,6 +221,7 @@ export default function DatasetDetailModal({ dataset, onClose }) {
 
         {/* Corpo do Modal */}
         <div className="modal-body">
+          {/* O QUE ESTOU VENDO? */}
           <div className="modal-section">
             <h3 className="section-title">Sobre este conjunto de dados</h3>
             <p className="section-description">
@@ -142,9 +230,7 @@ export default function DatasetDetailModal({ dataset, onClose }) {
             </p>
           </div>
 
-          {/* ========================================================= */}
-          {/* SEÇÃO DE ARQUIVOS COM PESQUISA E FILTRO INTERNO           */}
-          {/* ========================================================= */}
+          {/* SEÇÃO DE ARQUIVOS COM PESQUISA E FILTRO INTERNO */}
           <div className="modal-section">
             <div className="section-header-row">
               <div>
@@ -157,10 +243,8 @@ export default function DatasetDetailModal({ dataset, onClose }) {
               </div>
             </div>
 
-            {/* Barra de Busca Interna e Pílulas de Extensão */}
             {filesList.length > 1 && (
               <div className="internal-file-controls">
-                {/* 1. Input de Pesquisa Expandido (Ocupa a primeira linha inteira) */}
                 <div className="file-search-wrapper">
                   <input
                     type="text"
@@ -168,19 +252,19 @@ export default function DatasetDetailModal({ dataset, onClose }) {
                     onChange={(e) => setFileSearchTerm(e.target.value)}
                     placeholder="Buscar arquivo específico por nome..."
                     className="file-search-input"
+                    aria-label="Buscar arquivo por nome"
                   />
                   {fileSearchTerm && (
                     <button
                       onClick={() => setFileSearchTerm("")}
                       className="file-search-clear"
-                      title="Limpar busca"
+                      aria-label="Limpar busca de arquivo"
                     >
                       ✕
                     </button>
                   )}
                 </div>
 
-                {/* 2. Filtros Rápidos por Extensão (Organizados na segunda linha) */}
                 <div className="file-format-pills">
                   <span className="format-pill-label">
                     Filtrar por formato:
@@ -215,7 +299,6 @@ export default function DatasetDetailModal({ dataset, onClose }) {
               </div>
             )}
 
-            {/* Lista de Arquivos Filtrada */}
             <div className="files-list-container">
               {filteredFiles.length === 0 ? (
                 <div className="empty-files-message">
@@ -259,7 +342,7 @@ export default function DatasetDetailModal({ dataset, onClose }) {
             </div>
           </div>
 
-          {/* Metadados Técnicos e de Repositório */}
+          {/* METADADOS TÉCNICOS (BP7 — identificadores persistentes) */}
           <div className="metadata-box">
             <h3 className="metadata-box-title">
               {isZenodoMeta
@@ -291,14 +374,104 @@ export default function DatasetDetailModal({ dataset, onClose }) {
               </div>
               <div className="metadata-item">
                 <span className="metadata-label">Identificador DOI</span>
-                <span
-                  className="metadata-value font-mono truncate"
-                  title={meta.doi}
-                >
-                  {meta.doi || "N/A"}
-                </span>
+                {meta.doi ? (
+                  <a
+                    href={`https://doi.org/${meta.doi}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="metadata-value font-mono truncate metadata-doi-link"
+                    title={`Acessar registro completo: ${meta.doi}`}
+                  >
+                    {meta.doi}
+                  </a>
+                ) : (
+                  <span className="metadata-value font-mono">N/A</span>
+                )}
               </div>
             </div>
+
+            {/* REUTILIZAÇÃO E PROVENIÊNCIA — W3C DWBP BP4, BP5, BP6, BP23, BP29 */}
+            {hasDwbpFields && (
+              <div className="dwbp-section">
+                <h4 className="dwbp-section-title">
+                  Reutilização e Proveniência
+                  <span className="dwbp-badge">W3C DWBP</span>
+                </h4>
+
+                <div className="dwbp-grid">
+                  {/* BP4 — Licença */}
+                  {license && (
+                    <div className="metadata-item">
+                      <span className="metadata-label">Licença de Uso (BP4)</span>
+                      {license.url ? (
+                        <a
+                          href={license.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="license-badge"
+                          title={license.title}
+                        >
+                          {license.label}
+                        </a>
+                      ) : (
+                        <span className="license-badge license-badge--plain">
+                          {license.label}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* BP29 — Frequência de atualização */}
+                  {meta.periodicidade && (
+                    <div className="metadata-item">
+                      <span className="metadata-label">Atualização (BP29)</span>
+                      <span className="metadata-value">{meta.periodicidade}</span>
+                    </div>
+                  )}
+
+                  {/* BP23 — Contato responsável */}
+                  {meta.contato && (
+                    <div className="metadata-item">
+                      <span className="metadata-label">Contato (BP23)</span>
+                      {meta.contato.includes("@") ? (
+                        <a
+                          href={`mailto:${meta.contato}`}
+                          className="metadata-value metadata-contact-link"
+                        >
+                          {meta.contato}
+                        </a>
+                      ) : (
+                        <span className="metadata-value">{meta.contato}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* BP5 — Proveniência */}
+                  {meta.proveniencia && (
+                    <div className="metadata-item metadata-item--full">
+                      <span className="metadata-label">
+                        Proveniência e Metodologia (BP5)
+                      </span>
+                      <span className="metadata-value dwbp-text">
+                        {meta.proveniencia}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* BP6 — Qualidade */}
+                  {meta.qualidade && (
+                    <div className="metadata-item metadata-item--full">
+                      <span className="metadata-label">
+                        Qualidade e Limitações Conhecidas (BP6)
+                      </span>
+                      <span className="metadata-value dwbp-text">
+                        {meta.qualidade}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Visualização Preliminar (Tabela de Amostra) */}
