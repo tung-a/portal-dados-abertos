@@ -124,7 +124,7 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
 
     try {
       setIsUploading(true);
-      setStatusMessage("1/3: Criando novo depósito...");
+      setStatusMessage("1/4: Criando novo depósito...");
 
       // PASSO 1: Criar o depósito vazio na API do Zenodo Sandbox
       const createRes = await fetch(
@@ -154,7 +154,7 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
       for (let i = 0; i < files.length; i++) {
         const fileObj = files[i];
         setStatusMessage(
-          `2/3: Enviando arquivo ${i + 1} de ${files.length} (${fileObj.name})...`,
+          `2/4: Enviando arquivo ${i + 1} de ${files.length} (${fileObj.name})...`,
         );
 
         const fileRes = await fetch(
@@ -178,7 +178,7 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
 
       // PASSO 3: Salvar os metadados W3C DWBP no depósito criado
       setStatusMessage(
-        "3/3: Gravando metadados científicos e solicitando DOI...",
+        "3/4: Gravando metadados científicos e solicitando DOI...",
       );
 
       const metadataPayload = {
@@ -217,13 +217,31 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
         throw new Error("Falha ao registrar metadados finais no Zenodo.");
       }
 
-      const finalDeposition = await updateRes.json();
+      setStatusMessage(
+        "4/4: Publicando dataset oficialmente e liberando acesso público...",
+      );
 
-      // =========================================================================
-      // 🛡️ MAPEAMENTO SEGURO (CORREÇÃO DO ERRO .SPLIT)
-      // =========================================================================
+      const publishRes = await fetch(
+        `https://sandbox.zenodo.org/api/deposit/depositions/${depId}/actions/publish`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!publishRes.ok) {
+        throw new Error(
+          "O arquivo subiu, mas a API recusou a publicação pública final.",
+        );
+      }
+
+      // Agora pegamos a resposta da PUBLICAÇÃO FINAL (que contém os links públicos reais!)
+      const finalDeposition = await publishRes.json();
+
       const realDistributions = uploadedFilesList.map((f, idx) => {
-        // Suporta tanto o formato do bucket ('key' / 'size') quanto do catálogo ('filename' / 'filesize')
         const fileName =
           f.filename || f.key || files[idx]?.name || "arquivo.zip";
         const fileSizeBytes = f.filesize || f.size || files[idx]?.size || 0;
@@ -235,10 +253,8 @@ export default function DatasetUploadModal({ isOpen, onClose, onAddDataset }) {
           format: ext,
           size:
             sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(2)} MB` : `${sizeKB} KB`,
-          downloadUrl:
-            f.links?.download ||
-            f.links?.self ||
-            `https://sandbox.zenodo.org/records/${depId}/files/${encodeURIComponent(fileName)}?download=1`,
+          // Usamos a URL pública gerada no registro final do CERN:
+          downloadUrl: `https://sandbox.zenodo.org/records/${finalDeposition.id}/files/${encodeURIComponent(fileName)}?download=1`,
           checksum: f.checksum || "MD5 Verificado via API CERN",
         };
       });
