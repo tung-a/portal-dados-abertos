@@ -232,7 +232,10 @@ export default function DatasetDetailModal({ dataset, onClose }) {
               className={`btn-share-link ${isCopied ? "copied" : ""}`}
               title="Copiar link direto para este dataset"
             >
-              {isCopied ? "✅ Link Copiado!" : "🔗 Compartilhar Link"}
+              {isCopied ? "✅" : "🔗"}
+              <span className="btn-share-label">
+                {isCopied ? " Link Copiado!" : " Compartilhar"}
+              </span>
             </button>
             <button
               onClick={onClose}
