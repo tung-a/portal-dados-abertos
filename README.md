@@ -2,6 +2,16 @@
 
 Catálogo de datasets geoespaciais, tabulares e estatísticos sobre o território de São Vicente (SP). Desenvolvido como Projeto Integrador da disciplina **Governo Aberto** (EACH/USP), em parceria com o **Observatório de Justiça Climática de São Vicente** (Coop Clima).
 
+## Documentação do projeto
+
+| Documento | Arquivo | Descrição |
+| --- | --- | --- |
+| Slides de Apresentação | [`public/docs/slides-projeto.pdf`](public/docs/slides-projeto.pdf) | Apresentação do projeto para a disciplina Governo Aberto (EACH/USP) |
+| Relatório Final | [`public/docs/relatorio-final.pdf`](public/docs/relatorio-final.pdf) | Relatório completo de desenvolvimento, decisões técnicas e conformidade W3C DWBP |
+| Vídeo de Apresentação | [`public/docs/link-video.md`](public/docs/link-video.md) | Link para o vídeo no Google Drive (também embutido no portal via iframe) |
+
+Os PDFs ficam em `public/docs/` e são servidos como arquivos estáticos pelo Vite — acessíveis em `/docs/nome-do-arquivo.pdf`. O vídeo é embutido via iframe do Google Drive, configurado em `src/components/ProjectDocs/ProjectDocs.jsx`.
+
 ## Sobre o projeto
 
 O portal centraliza datasets sobre vulnerabilidade climática, risco socioambiental, território e dados socioeconômicos do município. Todos os conjuntos de dados são publicados com:
@@ -35,13 +45,20 @@ O portal centraliza datasets sobre vulnerabilidade climática, risco socioambien
 ## Estrutura de componentes
 
 ```text
+public/
+└── docs/
+    ├── slides-projeto.pdf    # Slides da apresentação final
+    ├── relatorio-final.pdf   # Relatório de desenvolvimento
+    └── link-video.md         # Link direto para o vídeo no Google Drive
+
 src/
 ├── components/
 │   ├── Header/               # Cabeçalho com busca e grid de eixos temáticos
 │   ├── SidebarFilters/       # Filtros por categoria e formato
 │   ├── DatasetCard/          # Card do catálogo com badge de licença
 │   ├── DatasetDetailModal/   # Modal de detalhe (bottom sheet no mobile)
-│   └── DatasetUploadModal/   # Modal de publicação de novo dataset
+│   ├── DatasetUploadModal/   # Modal de publicação de novo dataset
+│   └── ProjectDocs/          # Seção de documentação (PDFs + vídeo embed)
 ├── assets/
 │   └── logos/
 └── App.jsx                   # Lógica central, filtros, paginação, integração Zenodo
