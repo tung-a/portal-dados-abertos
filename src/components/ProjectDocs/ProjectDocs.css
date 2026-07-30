@@ -1,0 +1,209 @@
+.project-docs-section {
+  background-color: var(--coop-fundo-claro);
+  border-top: 1px solid rgba(135, 74, 51, 0.12);
+  padding: 3rem 1.5rem;
+}
+
+.project-docs-inner {
+  max-width: 72rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ── Cabeçalho da seção ─────────────────────────────────────────── */
+.project-docs-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.project-docs-title {
+  font-family: var(--fonte-titulo);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--coop-escuro);
+  margin: 0;
+}
+
+.project-docs-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Layout principal: PDFs + vídeo lado a lado ─────────────────── */
+.docs-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.25rem;
+  /* sem align-items: colunas se esticam para a mesma altura */
+}
+
+@media (max-width: 768px) {
+  .docs-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Coluna de PDFs preenche toda a altura do grid ──────────────── */
+.docs-pdf-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Grid de cards de PDF ───────────────────────────────────────── */
+.docs-pdf-grid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Card de PDF ────────────────────────────────────────────────── */
+.doc-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+  min-height: 0;
+}
+
+.doc-card:hover {
+  border-color: rgba(0, 122, 74, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 122, 74, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Área de preview — cresce para preencher o card */
+.doc-preview-container {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 80px;
+  background-color: #f1f5f9;
+  overflow: hidden;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.doc-preview-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none; /* clique vai para o card, não para o iframe */
+}
+
+/* Rodapé do card */
+.doc-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.55rem 0.85rem 0.65rem;
+  flex-shrink: 0;
+}
+
+.doc-card-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--coop-escuro);
+}
+
+.doc-card-desc {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.doc-card-cta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--coop-verde);
+  margin-top: 0.1rem;
+}
+
+/* ── Bloco de vídeo ─────────────────────────────────────────────── */
+.docs-video-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.docs-col-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background-color: #000;
+}
+
+.video-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ── Placeholder quando o ID não está configurado ───────────────── */
+.video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  aspect-ratio: 16 / 9;
+  background-color: #f1f5f9;
+  border: 2px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.video-placeholder-icon {
+  font-size: 2.5rem;
+}
+
+.video-placeholder-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #475569;
+  margin: 0;
+}
+
+.video-placeholder-hint {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.video-placeholder-hint code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: #e2e8f0;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.2rem;
+  color: #475569;
+}

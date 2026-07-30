@@ -4,6 +4,7 @@ import SidebarFilters from "./components/SidebarFilters/SidebarFilters";
 import DatasetCard from "./components/DatasetCard/DatasetCard";
 import DatasetDetailModal from "./components/DatasetDetailModal/DatasetDetailModal";
 import DatasetUploadModal from "./components/DatasetUploadModal/DatasetUploadModal";
+import ProjectDocs from "./components/ProjectDocs/ProjectDocs";
 import "./App.css";
 
 // Remove tags HTML e decodifica caracteres acentuados (ex: &uacute; -> ú)
@@ -393,7 +394,10 @@ export default function App() {
         </section>
       </main>
 
-      {/* 3. Rodapé */}
+      {/* 3. Documentação do Projeto */}
+      <ProjectDocs />
+
+      {/* 4. Rodapé */}
       <footer>
         <p>
           Projeto Integrador - Disciplina Governo Aberto (EACH/USP) •
